@@ -1,0 +1,101 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Profile - Face Value</title>
+
+    <link rel="stylesheet" href="{% static 'css/user_profile/user_profile.css' %}">
+</head>
+
+<body>
+
+    <div class="profile-container">
+
+        <div class="top-bar">
+            <a href="{% url 'home:home' %}" class="back-link">
+                ← Back to Home
+            </a>
+        </div>
+
+        <div class="brand">Face Value</div>
+        <div class="subtitle">Your skincare profile</div>
+
+        <div class="profile-card">
+
+            <div class="profile-image-container">
+
+                {% if profile.profile_image %}
+                    <img
+                        src="{{ profile.profile_image.url }}"
+                        alt="Profile picture"
+                        class="profile-image"
+                    >
+                {% else %}
+                    <div class="profile-placeholder">
+                        {{ user.first_name|first|upper }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <h2>{{ user.username }}</h2>
+
+            <p class="email">
+                {{ user.email }}
+            </p>
+
+            <form method="post" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+
+                    <input
+                        type="text"
+                        id="full_name"
+                        name="full_name"
+                        value="{{ profile.full_name }}"
+                        placeholder="Enter your full name"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+
+                    <textarea
+                        id="bio"
+                        name="bio"
+                        rows="4"
+                        placeholder="Tell us a little about yourself..."
+                    >{{ profile.bio }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile_image">Profile Picture</label>
+
+                    <input
+                        type="file"
+                        id="profile_image"
+                        name="profile_image"
+                        accept="image/*"
+                    >
+                </div>
+
+                <button type="submit">
+                    Save Changes
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

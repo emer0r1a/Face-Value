@@ -1,0 +1,57 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Face Value</title>
+
+    <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
+</head>
+
+<body>
+
+    <div class="home-container">
+
+        <div class="brand">Face Value</div>
+
+        <div class="subtitle">
+            Skincare Without the Guesswork
+        </div>
+
+        <p class="welcome">
+            Welcome back, {{ user.first_name }}!
+        </p>
+
+        <p class="intro">
+            Face Value helps you explore skincare products and figure out what
+            actually works for your skin type. Browse ingredients, compare
+            products, and build a routine that fits you.
+        </p>
+
+        <div class="home-actions">
+
+            <a href="{% url 'product_library:list' %}">
+                Products
+            </a>
+
+            <a href="{% url 'user_profile:profile' %}">
+                Profile
+            </a>
+
+            <a href="{% url 'user_settings:settings' %}">
+                Settings
+            </a>
+
+        </div>
+
+        <form method="post" action="{% url 'login:logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - Face Value</title>
+
+    <link rel="stylesheet" href="{% static 'css/login/login.css' %}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="brand">Face Value</div>
+        <div class="subtitle">See what works for your skin</div>
+
+        <h2>Login</h2>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login:login' %}" id="loginForm">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                >
+            </div>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="link-row">
+            Don't have an account?
+            <a href="{% url 'register:register' %}">Register</a>
+        </div>
+
+    </div>
+
+    <script src="{% static 'js/login/login.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #ffe8e0 0%, #fff5f0 50%, #fffaf8 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: #4a3b3b;
+}
+
+.container {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 12px 35px rgba(120, 80, 70, 0.12);
+    padding: 42px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.brand {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #d97b66;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #9c8b8b;
+    margin-bottom: 28px;
+}
+
+h2 {
+    text-align: center;
+    color: #4a3b3b;
+    font-size: 23px;
+    margin-bottom: 22px;
+}
+
+.form-group {
+    margin-bottom: 17px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: #6b5a5a;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid #e2d5d1;
+    border-radius: 9px;
+    background: #fffdfc;
+    color: #4a3b3b;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+input:focus {
+    border-color: #d97b66;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(217, 123, 102, 0.12);
+}
+
+button {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: #d97b66;
+    color: #ffffff;
+    border: 2px solid #d97b66;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background-color: #c96854;
+    border-color: #c96854;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(201, 104, 84, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.link-row {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 14px;
+    color: #9c8b8b;
+}
+
+.link-row a {
+    color: #d97b66;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link-row a:hover {
+    color: #c2604c;
+    text-decoration: underline;
+}
+
+.error {
+    background: #fdf0ee;
+    color: #c2604c;
+    border: 1px solid #f3d3cc;
+    padding: 11px 13px;
+    border-radius: 9px;
+    font-size: 13px;
+    margin-bottom: 17px;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 16px;
+    }
+
+    .container {
+        padding: 30px 24px;
+        border-radius: 16px;
+    }
+}

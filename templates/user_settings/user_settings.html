@@ -1,0 +1,85 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Settings - Face Value</title>
+
+    <link rel="stylesheet" href="{% static 'css/user_settings/user_settings.css' %}">
+</head>
+
+<body>
+
+    <div class="settings-container">
+
+        <div class="top-bar">
+            <a href="{% url 'home:home' %}" class="back-link">
+                ← Back to Home
+            </a>
+        </div>
+
+        <div class="brand">Face Value</div>
+        <div class="subtitle">Customize your experience</div>
+
+        <div class="settings-card">
+
+            <h2>Settings</h2>
+
+            <form method="post">
+
+                {% csrf_token %}
+
+                <div class="setting-row">
+
+                    <div class="setting-info">
+                        <h3>Dark Mode</h3>
+                        <p>Use a darker appearance for the website.</p>
+                    </div>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            name="dark_mode"
+                            {% if settings.dark_mode %}checked{% endif %}
+                        >
+
+                        <span class="slider"></span>
+                    </label>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <div class="setting-info">
+                        <h3>Email Notifications</h3>
+                        <p>Receive notifications and updates through email.</p>
+                    </div>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            name="email_notifications"
+                            {% if settings.email_notifications %}checked{% endif %}
+                        >
+
+                        <span class="slider"></span>
+                    </label>
+
+                </div>
+
+                <button type="submit">
+                    Save Settings
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

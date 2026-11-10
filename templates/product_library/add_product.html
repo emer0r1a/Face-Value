@@ -1,0 +1,117 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Product - Face Value</title>
+
+    <link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">
+</head>
+
+<body>
+
+    <div class="library-container narrow">
+
+        <div class="top-bar">
+            <a href="{% url 'product_library:list' %}" class="back-link">
+                ← Back to Product Library
+            </a>
+        </div>
+
+        <div class="brand">Face Value</div>
+        <div class="subtitle">Add a product to your library</div>
+
+        <div class="form-card">
+
+            <h2>Add Product</h2>
+
+            {% if error %}
+                <div class="message error">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" id="addProductForm">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="product_name">Product Name</label>
+                    <input
+                        type="text"
+                        id="product_name"
+                        name="product_name"
+                        maxlength="150"
+                        value="{{ values.product_name }}"
+                        placeholder="e.g. Hydrating Facial Cleanser"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="brand">Brand</label>
+                    <input
+                        type="text"
+                        id="brand"
+                        name="brand"
+                        maxlength="100"
+                        value="{{ values.brand }}"
+                        placeholder="e.g. CeraVe"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="" disabled {% if not values.category %}selected{% endif %}>
+                            Select a category
+                        </option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if values.category == cat %}selected{% endif %}>
+                                {{ cat }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description <span class="optional">(optional)</span></label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="3"
+                        placeholder="What is this product for? Any notes?"
+                    >{{ values.description }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="ingredients">Ingredients <span class="optional">(optional)</span></label>
+                    <textarea
+                        id="ingredients"
+                        name="ingredients"
+                        rows="5"
+                        placeholder="Separate with commas: Water, Glycerin, Niacinamide"
+                    >{{ values.ingredients }}</textarea>
+                    <p class="hint">
+                        List them in the order printed on the label.
+                        <span id="ingredientCount">0 ingredients</span>
+                    </p>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'product_library:list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save Product</button>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script src="{% static 'js/product_library/add_product.js' %}"></script>
+</body>
+</html>
