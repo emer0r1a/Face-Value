@@ -2,13 +2,12 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Add Product - Face Value</title>
 
+    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">
 </head>
 
@@ -99,6 +98,7 @@
                         List them in the order printed on the label.
                         <span id="ingredientCount">0 ingredients</span>
                     </p>
+                    <div class="ingredient-preview" id="ingredientPreview" aria-live="polite"></div>
                 </div>
 
                 <div class="form-actions">
@@ -112,6 +112,7 @@
 
     </div>
 
+    <script src="{% static 'js/base/base.js' %}"></script>
     <script src="{% static 'js/product_library/add_product.js' %}"></script>
 </body>
 </html>

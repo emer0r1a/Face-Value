@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700&family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Leckerli+One&display=swap');
+
+:root {
+    --ink: #1d2b5a;
+    --muted: #6874a0;
+    --blue: #4d8dff;
+    --sky: #cfe4ff;
+    --butter: #fff0b3;
+    --mint: #c9f1e0;
+    --lilac: #e2ddff;
+    --cloud: #f3f8ff;
+    --line: #d3e1f7;
+    --warn-bg: #ffe9d2;
+    --warn-ink: #9a4a12;
+
+    --font-brand: 'Leckerli One', cursive;
+    --font-head: 'Fraunces', Georgia, serif;
+    --font-body: 'Bricolage Grotesque', system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--cloud);
+    min-height: 100vh;
+    padding: 30px 20px;
+    overflow-x: hidden;
+}
+
+body.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* Soft blobs in the corners */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    border-radius: 46% 54% 58% 42% / 50% 42% 58% 50%;
+}
+body::before { width: 380px; height: 380px; background: var(--lilac); top: -130px; right: -110px; }
+body::after  { width: 330px; height: 330px; background: var(--butter); bottom: -120px; left: -100px; opacity: .8; }
+
+h1, h2, h3 { font-family: var(--font-head); font-weight: 800; letter-spacing: -0.01em; }
+
+/* Brand: the only cursive text */
+.brand {
+    font-family: var(--font-brand);
+    text-align: center;
+    font-size: 42px;
+    line-height: 1.1;
+    color: var(--blue);
+    text-shadow: 3px 3px 0 var(--butter);
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 15px;
+    margin: 6px 0 24px;
+}
+
+/* Cards with a scalloped coloured top edge */
+.container,
+.home-container,
+.profile-card,
+.settings-card,
+.form-card {
+    --band: var(--sky);
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 28px;
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 72px 36px 36px;
+}
+
+.container::before,
+.home-container::before,
+.profile-card::before,
+.settings-card::before,
+.form-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 54px;
+    background:
+        radial-gradient(circle at 14px 0, var(--band) 14px, transparent 15px) 0 38px / 28px 16px repeat-x,
+        linear-gradient(var(--band), var(--band)) 0 0 / 100% 38px no-repeat;
+}
+
+/* Buttons */
+button,
+.btn {
+    display: inline-block;
+    width: 100%;
+    padding: 13px 20px;
+    background: var(--blue);
+    color: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 0 4px 0 var(--ink);
+    font: 700 15px var(--font-body);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+}
+
+button:hover, .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); }
+button:active, .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+button:disabled, .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+.btn { width: auto; white-space: nowrap; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-secondary { background: var(--butter); color: var(--ink); }
+
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 2px;
+}
+
+/* Forms */
+.form-group { margin-bottom: 18px; }
+
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="file"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--cloud);
+    color: var(--ink);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    font: 500 15px var(--font-body);
+    transition: border-color .15s, background .15s;
+}
+
+input:focus, select:focus, textarea:focus { border-color: var(--blue); background: #fff; outline: none; }
+textarea { resize: vertical; }
+::placeholder { color: #9aa6c8; }
+
+/* Messages */
+.message {
+    padding: 11px 14px;
+    margin-bottom: 18px;
+    background: var(--mint);
+    color: #14604a;
+    border: 2px solid #14604a;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.message.error, .error {
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    border: 2px solid var(--warn-ink);
+    padding: 11px 14px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Back link pill */
+.top-bar { margin-bottom: 18px; }
+
+.back-link {
+    display: inline-block;
+    padding: 7px 14px;
+    background: #fff;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .15s;
+}
+.back-link:hover { background: var(--butter); }
+
+.link-row { text-align: center; margin-top: 20px; font-size: 14px; color: var(--muted); }
+.link-row a { color: var(--blue); font-weight: 700; text-decoration: none; }
+.link-row a:hover { text-decoration: underline; }
+
+/* Click sparkles (see base.js) */
+.spark {
+    position: fixed;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99;
+    animation: spark .6s ease-out forwards;
+}
+@keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; } }
+
+@media (max-width: 480px) {
+    body { padding: 18px 14px; }
+    body.center { padding: 16px; }
+    .container, .home-container, .profile-card, .settings-card, .form-card { padding: 66px 22px 28px; }
+    .brand { font-size: 36px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+}

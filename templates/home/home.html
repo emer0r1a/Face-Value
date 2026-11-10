@@ -7,10 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - Face Value</title>
 
+    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
 </head>
 
-<body>
+<body class="center">
 
     <div class="home-container">
 
@@ -30,17 +31,24 @@
             products, and build a routine that fits you.
         </p>
 
+        <div class="ribbon" aria-hidden="true">
+            <span>✦ Know your ingredients ✦ Build your shelf ✦ Find what works for your skin ✦ Skincare without the guesswork</span>
+        </div>
+
         <div class="home-actions">
 
-            <a href="{% url 'product_library:list' %}">
+            <a href="{% url 'product_library:list' %}" class="tile">
+                <span class="tile-icon">🧴</span>
                 Products
             </a>
 
-            <a href="{% url 'user_profile:profile' %}">
+            <a href="{% url 'user_profile:profile' %}" class="tile">
+                <span class="tile-icon">🌼</span>
                 Profile
             </a>
 
-            <a href="{% url 'user_settings:settings' %}">
+            <a href="{% url 'user_settings:settings' %}" class="tile">
+                <span class="tile-icon">🎛️</span>
                 Settings
             </a>
 
@@ -53,5 +61,6 @@
 
     </div>
 
+    <script src="{% static 'js/base/base.js' %}"></script>
 </body>
 </html>

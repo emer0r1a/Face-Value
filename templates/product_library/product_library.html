@@ -2,13 +2,12 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Product Library - Face Value</title>
 
+    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">
 </head>
 
@@ -75,34 +74,40 @@
             <div class="product-grid">
 
                 {% for product in products %}
-                    <div class="product-card">
+                    <div class="product-card tilt {% cycle 'c-blue' 'c-butter' 'c-mint' 'c-lilac' %}">
 
-                        <div class="card-header">
+                        <div class="card-art">
                             <span class="category-tag">{{ product.category }}</span>
-                            <span class="date">{{ product.date_added|date:"M j, Y" }}</span>
+                            <span class="art-letter">{{ product.product_name|first|upper }}</span>
                         </div>
 
-                        <h3>{{ product.product_name }}</h3>
-                        <p class="brand-name">{{ product.brand }}</p>
+                        <div class="card-body">
 
-                        {% if product.description %}
-                            <p class="description">{{ product.description|truncatechars:110 }}</p>
-                        {% endif %}
+                            <h3>{{ product.product_name }}</h3>
+                            <p class="brand-name">{{ product.brand }}</p>
 
-                        {% with items=product.product_ingredients.all %}
-                            {% if items %}
-                                <div class="ingredients">
-                                    {% for item in items|slice:":6" %}
-                                        <span class="chip">{{ item.ingredient.ingredient_name }}</span>
-                                    {% endfor %}
-                                    {% if items|length > 6 %}
-                                        <span class="chip chip-more">+{{ items|length|add:"-6" }} more</span>
-                                    {% endif %}
-                                </div>
-                            {% else %}
-                                <p class="no-ingredients">No ingredients listed</p>
+                            {% if product.description %}
+                                <p class="description">{{ product.description|truncatechars:110 }}</p>
                             {% endif %}
-                        {% endwith %}
+
+                            {% with items=product.product_ingredients.all %}
+                                {% if items %}
+                                    <div class="ingredients">
+                                        {% for item in items|slice:":6" %}
+                                            <span class="chip">{{ item.ingredient.ingredient_name }}</span>
+                                        {% endfor %}
+                                        {% if items|length > 6 %}
+                                            <span class="chip chip-more">+{{ items|length|add:"-6" }} more</span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <p class="no-ingredients">No ingredients listed</p>
+                                {% endif %}
+                            {% endwith %}
+
+                            <span class="date">Added {{ product.date_added|date:"M j, Y" }}</span>
+
+                        </div>
 
                     </div>
                 {% endfor %}
@@ -116,8 +121,8 @@
                     <h3>No matching products</h3>
                     <p>Try a different search or clear the filters.</p>
                 {% else %}
-                    <h3>Your library is empty</h3>
-                    <p>Add your first skincare product to get started.</p>
+                    <h3>Your shelf is empty</h3>
+                    <p>Add your first skincare product to start your library.</p>
                     <a href="{% url 'product_library:add' %}" class="btn btn-primary">+ Add Product</a>
                 {% endif %}
             </div>
@@ -126,6 +131,7 @@
 
     </div>
 
+    <script src="{% static 'js/base/base.js' %}"></script>
     <script src="{% static 'js/product_library/product_library.js' %}"></script>
 </body>
 </html>
