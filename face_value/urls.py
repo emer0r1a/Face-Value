@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+
+from .views import landing_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -28,8 +29,9 @@ urlpatterns = [
     path("profile/", include("apps.user_profile.urls")),
     path("settings/", include("apps.user_settings.urls")),
     path("products/", include("apps.product_library.urls")),
+    path("routines/", include("apps.routine_builder.urls")),
 
-    path("", RedirectView.as_view(pattern_name="login:login")),
+    path("", landing_view, name="landing"),
 ]
 
 urlpatterns += static(

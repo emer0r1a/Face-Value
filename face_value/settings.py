@@ -25,15 +25,20 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ebto!7o&-548phb736jnwn!e!5*nzk=fwvrs)389z!)75)cbr3'
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    'django-insecure-ebto!7o&-548phb736jnwn!e!5*nzk=fwvrs)389z!)75)cbr3',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h]
 
 # URLs
 LOGIN_URL = "login:login"
+LOGIN_REDIRECT_URL = "home:home"
+LOGOUT_REDIRECT_URL = "landing"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -80,6 +85,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.home.context_processors.navbar_counts',
             ],
         },
     },
@@ -91,13 +97,31 @@ WSGI_APPLICATION = 'face_value.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ["DATABASE_URL"],
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+# PostgreSQL. Set DATABASE_URL (e.g. postgres://user:pass@host:5432/face_value)
+# or, for a local server, the individual DB_* variables.
+# DB_SSL_REQUIRE=False turns SSL off for a local Postgres install.
+_db_ssl = os.getenv("DB_SSL_REQUIRE", "True") == "True"
+
+if os.getenv("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.parse(
+            os.environ["DATABASE_URL"],
+            conn_max_age=600,
+            ssl_require=_db_ssl,
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", "face_value"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+            "CONN_MAX_AGE": 600,
+        }
+    }
 
 
 # Password validation
@@ -124,7 +148,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Routines are scheduled by day of week, so "today" should match the user's
+# local day. Set TIME_ZONE in .env (e.g. Asia/Manila); defaults to UTC.
+TIME_ZONE = os.getenv("TIME_ZONE", "UTC")
 
 USE_I18N = True
 
