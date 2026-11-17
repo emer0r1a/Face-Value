@@ -1,61 +1,70 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('addProductForm');
-    const ingredients = document.getElementById('ingredients');
-    const counter = document.getElementById('ingredientCount');
-    const preview = document.getElementById('ingredientPreview');
-    const submitBtn = document.getElementById('submitBtn');
+    var form = document.getElementById('addProductForm');
     if (!form) return;
 
-    // Same parsing rules as the server: split on commas/new lines, drop duplicates
-    function parseIngredients() {
-        const seen = new Set();
-        const names = [];
-        ingredients.value.split(/[,\n]/).forEach(function (part) {
-            const name = part.trim().replace(/\s+/g, ' ');
-            const key = name.toLowerCase();
-            if (name && !seen.has(key)) {
-                seen.add(key);
-                names.push(name);
-            }
+    /* ---------- ingredient chips preview ---------- */
+    var ta = document.getElementById('ingredients');
+    var count = document.getElementById('ingredientCount');
+    var prev = document.getElementById('ingredientPreview');
+    function parse(t) {
+        var seen = {}, out = [];
+        t.split(/[,\n;]+/).forEach(function (n) {
+            n = n.trim(); var k = n.toLowerCase();
+            if (n && !seen[k]) { seen[k] = 1; out.push(n); }
         });
-        return names;
+        return out;
     }
-
-    let shown = [];
-
-    function update() {
-        const names = parseIngredients();
-        counter.textContent = names.length + (names.length === 1 ? ' ingredient' : ' ingredients');
-
-        // Only rebuild the chips when the list changed, so new ones pop in
-        if (names.join('|') === shown.join('|')) return;
-        shown = names;
-        preview.innerHTML = '';
-        names.forEach(function (name) {
-            const chip = document.createElement('span');
-            chip.className = 'chip';
-            chip.textContent = name;
-            preview.appendChild(chip);
+    function render() {
+        var items = parse(ta.value);
+        count.textContent = items.length + ' ingredient' + (items.length === 1 ? '' : 's');
+        prev.textContent = '';
+        items.slice(0, 40).forEach(function (n) {
+            var c = document.createElement('span'); c.className = 'chip'; c.textContent = n; prev.appendChild(c);
         });
     }
+    ta.addEventListener('input', render); render();
 
-    ingredients.addEventListener('input', update);
-    update();
+    /* ---------- photo picker with live preview ---------- */
+    var input = document.getElementById('image');
+    var dz = document.getElementById('dropzone');
+    var box = document.getElementById('preview');
+    var txt = document.getElementById('dzText');
+    var remove = document.getElementById('removeImage');
+    var MAX = 5 * 1024 * 1024;
 
+    function showError(msg) {
+        var e = form.querySelector('.message.error');
+        if (!e) { e = document.createElement('div'); e.className = 'message error'; e.setAttribute('role', 'alert'); var card = form.querySelector('.form-card'); card.insertBefore(e, card.querySelector('.form-group')); }
+        e.textContent = msg;
+    }
+    function setPhoto(file) {
+        if (!file) return;
+        if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) { showError('Please choose a JPG, PNG, WebP or GIF photo.'); input.value = ''; return; }
+        if (file.size > MAX) { showError('That photo is over 5 MB. Please pick a smaller one.'); input.value = ''; return; }
+        var r = new FileReader();
+        r.onload = function () {
+            box.textContent = '';
+            var img = document.createElement('img'); img.src = r.result; img.alt = 'Photo preview'; box.appendChild(img);
+            box.classList.add('pop');
+            setTimeout(function () { box.classList.remove('pop'); }, 400);
+            txt.textContent = 'Change photo';
+            if (remove) remove.checked = false;
+        };
+        r.readAsDataURL(file);
+    }
+    input.addEventListener('change', function () { setPhoto(input.files[0]); });
+    ['dragenter', 'dragover'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('drag'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('drag'); }); });
+    dz.addEventListener('drop', function (e) {
+        var f = e.dataTransfer.files[0]; if (!f) return;
+        var dt = new DataTransfer(); dt.items.add(f); input.files = dt.files; setPhoto(f);
+    });
+
+    /* ---------- validation + submit state ---------- */
     form.addEventListener('submit', function (e) {
-        const required = ['product_name', 'brand'];
-        for (const id of required) {
-            const field = document.getElementById(id);
-            if (!field.value.trim()) {
-                e.preventDefault();
-                alert('Please fill in the product name and brand.');
-                field.focus();
-                return;
-            }
-        }
-
-        // Prevent double submissions
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving...';
+        var name = form.product_name, brand = form.brand;
+        var bad = [name, brand].filter(function (f) { return !f.value.trim(); })[0];
+        if (bad) { e.preventDefault(); showError('Please fill in the product name and brand.'); bad.focus(); return; }
+        var btn = document.getElementById('submitBtn'); btn.disabled = true; btn.firstChild.textContent = 'Saving… ';
     });
 });

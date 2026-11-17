@@ -1,118 +1,78 @@
+{% extends "base.html" %}
 {% load static %}
+{% block title %}{% if product %}Edit product{% else %}Add product{% endif %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product - Face Value</title>
+{% block content %}
+<main class="library-container">
+    <div class="top-bar">
+        <a href="{% if product %}{% url 'product_library:detail' product.pk %}{% else %}{% url 'product_library:list' %}{% endif %}" class="back-link"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg> {% if product %}Back to product{% else %}Back to library{% endif %}</a>
+    </div>
 
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">
-</head>
+    <form method="post" enctype="multipart/form-data" id="addProductForm" class="form-shell">
+        {% csrf_token %}
 
-<body>
-
-    <div class="library-container narrow">
-
-        <div class="top-bar">
-            <a href="{% url 'product_library:list' %}" class="back-link">
-                ← Back to Product Library
-            </a>
-        </div>
-
-        <div class="brand">Face Value</div>
-        <div class="subtitle">Add a product to your library</div>
-
-        <div class="form-card">
-
-            <h2>Add Product</h2>
-
-            {% if error %}
-                <div class="message error">{{ error }}</div>
-            {% endif %}
-
-            <form method="post" id="addProductForm">
-
-                {% csrf_token %}
-
-                <div class="form-group">
-                    <label for="product_name">Product Name</label>
-                    <input
-                        type="text"
-                        id="product_name"
-                        name="product_name"
-                        maxlength="150"
-                        value="{{ values.product_name }}"
-                        placeholder="e.g. Hydrating Facial Cleanser"
-                        required
-                    >
+        <!-- Photo -->
+        <aside class="photo-card tone-lime">
+            <svg class="deco cloud cloud--p bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+            <label for="image" class="dropzone" id="dropzone">
+                <div class="dropzone__arch" id="preview">
+                    {% if product.image %}<img src="{{ product.image.url }}" alt="Current photo" id="previewImg">
+                    {% else %}<svg class="art" viewBox="0 0 120 160" id="previewArt"><use href="#a-pump"/></svg>{% endif %}
                 </div>
+                <span class="dropzone__cta"><svg viewBox="0 0 24 24"><use href="#ic-camera"/></svg> <b id="dzText">{% if product.image %}Change photo{% else %}Add a photo{% endif %}</b></span>
+                <small>Drag &amp; drop or tap. JPG, PNG, WebP or GIF up to 5 MB.</small>
+            </label>
+            <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+            {% if product.image %}
+            <label class="remove-photo"><input type="checkbox" name="remove_image" value="1" id="removeImage"> Remove current photo</label>
+            {% endif %}
+            <p class="photo-note">Photos are resized and location data is stripped before saving.</p>
+        </aside>
 
+        <!-- Details -->
+        <div class="form-card">
+            <span class="eyebrow">{% if product %}tidy up{% else %}new on the shelf{% endif %}</span>
+            <h2>{% if product %}Edit <span class="script">product</span>{% else %}Add a <span class="script">product</span>{% endif %}</h2>
+            <p class="lede">Ingredients are optional, but they power the clash checker and layering notes.</p>
+
+            {% if error %}<div class="message error" role="alert">{{ error }}</div>{% endif %}
+
+            <div class="form-group">
+                <label for="product_name">Product name</label>
+                <input type="text" id="product_name" name="product_name" maxlength="150" value="{{ values.product_name }}" placeholder="e.g. Hydrating Facial Cleanser" required>
+            </div>
+            <div class="grid-2">
                 <div class="form-group">
                     <label for="brand">Brand</label>
-                    <input
-                        type="text"
-                        id="brand"
-                        name="brand"
-                        maxlength="100"
-                        value="{{ values.brand }}"
-                        placeholder="e.g. CeraVe"
-                        required
-                    >
+                    <input type="text" id="brand" name="brand" maxlength="100" value="{{ values.brand }}" placeholder="e.g. CeraVe" required>
                 </div>
-
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select id="category" name="category" required>
-                        <option value="" disabled {% if not values.category %}selected{% endif %}>
-                            Select a category
-                        </option>
-                        {% for cat in categories %}
-                            <option value="{{ cat }}" {% if values.category == cat %}selected{% endif %}>
-                                {{ cat }}
-                            </option>
-                        {% endfor %}
+                        <option value="" disabled {% if not values.category %}selected{% endif %}>Select…</option>
+                        {% for cat in categories %}<option value="{{ cat }}" {% if values.category == cat %}selected{% endif %}>{{ cat }}</option>{% endfor %}
                     </select>
                 </div>
+            </div>
+            <div class="form-group">
+                <label for="description">Description <span class="optional">(optional)</span></label>
+                <textarea id="description" name="description" rows="3" placeholder="What is it for? Any notes?">{{ values.description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="ingredients">Ingredients <span class="optional">(optional)</span></label>
+                <textarea id="ingredients" name="ingredients" rows="4" placeholder="Separate with commas: Water, Glycerin, Niacinamide">{{ values.ingredients }}</textarea>
+                <p class="hint">List them in label order. <span id="ingredientCount">0 ingredients</span></p>
+                <div class="ingredient-preview" id="ingredientPreview" aria-live="polite"></div>
+            </div>
 
-                <div class="form-group">
-                    <label for="description">Description <span class="optional">(optional)</span></label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows="3"
-                        placeholder="What is this product for? Any notes?"
-                    >{{ values.description }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="ingredients">Ingredients <span class="optional">(optional)</span></label>
-                    <textarea
-                        id="ingredients"
-                        name="ingredients"
-                        rows="5"
-                        placeholder="Separate with commas: Water, Glycerin, Niacinamide"
-                    >{{ values.ingredients }}</textarea>
-                    <p class="hint">
-                        List them in the order printed on the label.
-                        <span id="ingredientCount">0 ingredients</span>
-                    </p>
-                    <div class="ingredient-preview" id="ingredientPreview" aria-live="polite"></div>
-                </div>
-
-                <div class="form-actions">
-                    <a href="{% url 'product_library:list' %}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Save Product</button>
-                </div>
-
-            </form>
-
+            <div class="form-actions">
+                <a href="{% if product %}{% url 'product_library:detail' product.pk %}{% else %}{% url 'product_library:list' %}{% endif %}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary" id="submitBtn">{% if product %}Save changes{% else %}Save product{% endif %} <span class="btn__arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span></button>
+            </div>
         </div>
+    </form>
+</main>
+{% endblock %}
 
-    </div>
-
-    <script src="{% static 'js/base/base.js' %}"></script>
-    <script src="{% static 'js/product_library/add_product.js' %}"></script>
-</body>
-</html>
+{% block js %}<script src="{% static 'js/product_library/add_product.js' %}"></script>{% endblock %}

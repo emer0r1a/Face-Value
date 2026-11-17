@@ -1,0 +1,27 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Face Value{% endblock %} · Face Value</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path fill='%2376A032' d='M27 3C13 3 4 10.5 4 20.5c0 3.2 1.1 5.7 3.2 7.3.4-6.3 4.2-11.7 11.6-14.8-5.3 4.4-8.4 8.8-9.5 14.7 1.4.7 3 1 4.7 1C25 28.7 29.6 18 27 3z'/></svg>">
+    <script src="{% static 'js/theme.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
+    {% block css %}{% endblock %}
+</head>
+<body class="has-nav {% block body_class %}{% endblock %}">
+    {% include "partials/art.html" %}
+    {% include "partials/navbar.html" %}
+
+    {% if messages %}
+    <div class="toasts" role="status">
+        {% for m in messages %}<div class="message {{ m.tags }}">{{ m }}</div>{% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <script src="{% static 'js/base/base.js' %}"></script>
+    {% block js %}{% endblock %}
+</body>
+</html>

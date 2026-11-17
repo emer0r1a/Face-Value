@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ product.product_name }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">{% endblock %}
+
+{% block content %}
+<main class="library-container">
+    <div class="top-bar"><a href="{% url 'product_library:list' %}" class="back-link"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg> Back to library</a></div>
+
+    <div class="detail tone-{% if product.status != 'active' %}sun{% else %}lime{% endif %}">
+        <!-- Photo -->
+        <section class="dmedia">
+            <svg class="deco leaf dleaf dleaf--1 bob" viewBox="0 0 32 32"><use href="#i-leaf"/></svg>
+            <svg class="deco leaf dleaf dleaf--2 bob" viewBox="0 0 32 32"><use href="#i-leaf"/></svg>
+            <div class="dmedia__card">
+                <span class="dmedia__disc"></span>
+                <div class="dmedia__frame">
+                    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.product_name }}">
+                    {% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ art }}"/></svg>{% endif %}
+                </div>
+                <a class="dmedia__cam" href="{% url 'product_library:edit' product.pk %}" aria-label="{% if product.image %}Change photo{% else %}Add a photo{% endif %}"><svg viewBox="0 0 24 24"><use href="#ic-camera"/></svg></a>
+            </div>
+            {% if not product.image %}<p class="dmedia__hint">No photo yet. <a href="{% url 'product_library:edit' product.pk %}">Add one</a> to make it yours.</p>{% endif %}
+        </section>
+
+        <!-- Info -->
+        <section class="dinfo">
+            <div class="detail-tags">
+                <span class="chip">{{ product.category }}</span>
+                {% if product.status != 'active' %}<span class="chip chip--warn">Archived</span>{% endif %}
+                {% if pending_reports %}<span class="chip chip--sky">{{ pending_reports }} report{{ pending_reports|pluralize }} pending</span>{% endif %}
+            </div>
+            <h1>{{ product.product_name }}</h1>
+            <p class="detail-brand"><span class="script">by</span> {{ product.brand }}</p>
+
+            <div class="tabs tabs--lg" id="dtabs" role="tablist">
+                <button type="button" class="tab active" role="tab" data-tab="overview">Overview</button>
+                <button type="button" class="tab" role="tab" data-tab="ingredients">Ingredients <b>{{ items|length }}</b></button>
+                <button type="button" class="tab" role="tab" data-tab="layering">Layering {% if owned_caution_count %}<b class="warn">{{ owned_caution_count }}</b>{% endif %}</button>
+                <button type="button" class="tab" role="tab" data-tab="history">History</button>
+            </div>
+
+            <!-- Overview -->
+            <div class="tabpanel" data-panel="overview">
+                {% if product.description %}<p class="detail-desc">{{ product.description }}</p>{% endif %}
+                <dl class="facts">
+                    <div><dt>Brand</dt><dd>{{ product.brand }}</dd></div>
+                    <div><dt>Category</dt><dd>{{ product.category }}</dd></div>
+                    <div><dt>Ingredients</dt><dd>{{ items|length }}</dd></div>
+                    <div><dt>Date added</dt><dd>{{ product.date_added|date:"M j, Y" }}</dd></div>
+                </dl>
+                <div class="meters">
+                    <div class="meter">
+                        <div class="meter__row"><span>Ingredient info complete</span><b>{{ completeness }}%</b></div>
+                        <div class="meter__bar"><i style="--w: {{ completeness }}%"></i></div>
+                        <small>{{ classified }} of {{ items|length }} ingredient{{ items|length|pluralize }} have a known function.</small>
+                    </div>
+                    <div class="ring-card">
+                        <div class="count-badge"><b>{{ caution_count }}</b></div>
+                        <span>Layering<br>notes</span>
+                    </div>
+                </div>
+                <h3 class="mini-h">In your routines</h3>
+                {% for ri in routine_items %}
+                <p class="routine-row"><span class="chip chip--sky">{{ ri.routine.routine_type|title }}</span> <a href="{% url 'routine_builder:edit' ri.routine.pk %}">{{ ri.routine.routine_name }}</a> <em>· step {{ ri.step_number }}, {{ ri.step_name }}</em></p>
+                {% empty %}<p class="muted-line">Not part of a routine yet.</p>{% endfor %}
+            </div>
+
+            <!-- Ingredients -->
+            <div class="tabpanel" data-panel="ingredients">
+                {% if items %}
+                <ol class="ing-list">
+                    {% for it in items %}
+                    <li><details>
+                        <summary>
+                            <span class="ing-num">{{ it.ingredient_order }}</span>
+                            <span class="ing-name">{{ it.ingredient.ingredient_name }}</span>
+                            <span class="ing-fn">{% if it.ingredient.function == 'Not yet classified' %}Not classified yet{% else %}{{ it.ingredient.function }}{% endif %}</span>
+                            {% if it.ingredient.caution %}<span class="ing-flag" title="Has a caution">!</span>{% endif %}
+                        </summary>
+                        <div class="ing-detail"><p>{{ it.ingredient.description }}</p>{% if it.ingredient.caution %}<p class="ing-caution">🌦️ {{ it.ingredient.caution }}</p>{% endif %}</div>
+                    </details></li>
+                    {% endfor %}
+                </ol>
+                <p class="note">Listed in label order, so ingredients near the top are usually the most concentrated.</p>
+                {% else %}
+                <div class="empty-inline"><p>No ingredients saved for this product yet.</p><a class="btn btn-ghost btn-sm" href="{% url 'product_library:edit' product.pk %}">Add ingredients</a></div>
+                {% endif %}
+            </div>
+
+            <!-- Layering -->
+            <div class="tabpanel" data-panel="layering">
+                {% for c in cautions %}{% if c.owned %}
+                <div class="caution caution--{{ c.severity }}">
+                    <strong>{{ c.this.ingredient_name }} + {{ c.other.ingredient_name }}</strong>
+                    <p>{{ c.message }}</p>
+                    {% if c.tip %}<p class="tip">💡 {{ c.tip }}</p>{% endif %}
+                    <p class="owned">On your shelf: {% for p in c.owned %}<a href="{% url 'product_library:detail' p.pk %}">{{ p.product_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                </div>
+                {% endif %}{% endfor %}
+                {% if cautions %}
+                <details class="more-cautions" {% if not owned_caution_count %}open{% endif %}>
+                    <summary>{% if owned_caution_count %}Other combinations to know about{% else %}Combinations to know about{% endif %}</summary>
+                    {% for c in cautions %}{% if not c.owned %}
+                    <div class="caution caution--{{ c.severity }}"><strong>{{ c.this.ingredient_name }} + {{ c.other.ingredient_name }}</strong><p>{{ c.message }}</p>{% if c.tip %}<p class="tip">💡 {{ c.tip }}</p>{% endif %}</div>
+                    {% endif %}{% endfor %}
+                </details>
+                {% else %}<p class="muted-line">🍃 No known layering concerns for this product's ingredients.</p>{% endif %}
+                <p class="note">General information only. It isn't medical advice. Check with a dermatologist if you have a skin condition or sensitive skin.</p>
+            </div>
+
+            <!-- History -->
+            <div class="tabpanel" data-panel="history">
+                <ul class="timeline">
+                    {% for h in history %}<li><i></i><div><strong>{{ h.action|capfirst }}</strong>{% if h.notes %} <span>{{ h.notes }}</span>{% endif %}<time>{{ h.action_date|date:"M j, Y · g:i A" }}</time></div></li>
+                    {% empty %}<li class="muted-line">No activity recorded yet.</li>{% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <!-- Action rail -->
+        <nav class="rail" aria-label="Product actions">
+            <a class="rail__btn" href="{% url 'product_library:edit' product.pk %}"><span><svg viewBox="0 0 24 24"><use href="#ic-edit"/></svg></span>Edit</a>
+            <form method="post" action="{% url 'product_library:status' product.pk %}">{% csrf_token %}
+                <button type="submit" class="rail__btn"><span><svg viewBox="0 0 24 24"><use href="#ic-archive"/></svg></span>{% if product.status == 'active' %}Archive{% else %}Restore{% endif %}</button>
+            </form>
+            <button type="button" class="rail__btn" data-open="reportDialog"><span><svg viewBox="0 0 24 24"><use href="#ic-flag"/></svg></span>Report</button>
+            <button type="button" class="rail__btn rail__btn--danger" data-open="deleteDialog"><span><svg viewBox="0 0 24 24"><use href="#ic-trash"/></svg></span>Delete</button>
+        </nav>
+    </div>
+</main>
+
+<dialog id="reportDialog" class="dlg">
+    <form method="post" action="{% url 'product_library:report' product.pk %}">{% csrf_token %}
+        <h3>Report outdated or wrong info</h3>
+        <p class="muted-line">Spotted something off with this product's details? Let us know and an admin will take a look.</p>
+        <div class="form-group"><label for="reason">What's wrong?</label>
+            <select id="reason" name="reason" required><option value="" disabled selected>Choose a reason…</option>{% for r in reasons %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select></div>
+        <div class="form-group"><label for="rdesc">Tell us more</label>
+            <textarea id="rdesc" name="description" rows="4" maxlength="2000" required placeholder="e.g. The new bottle lists a different ingredient order."></textarea></div>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button type="submit" class="btn btn-primary">Send report</button></div>
+    </form>
+</dialog>
+
+<dialog id="deleteDialog" class="dlg">
+    <form method="post" action="{% url 'product_library:delete' product.pk %}">{% csrf_token %}
+        <h3>Remove “{{ product.product_name }}”?</h3>
+        <p class="muted-line">This removes it from your library, and from any routines using it. This can't be undone. If you've just finished the bottle, archiving keeps the history.</p>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" data-close>Keep it</button><button type="submit" class="btn btn-danger">Delete</button></div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/product_library/product_detail.js' %}"></script>{% endblock %}

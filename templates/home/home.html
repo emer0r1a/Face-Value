@@ -1,66 +1,289 @@
+{% extends "base.html" %}
 {% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/home/home.css' %}">{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Face Value</title>
+{% block content %}
+<main class="dash" data-toggle-url="{% url 'home:toggle_routine' 0 %}" data-clash-url="{% url 'home:clash_check' %}">
 
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
-</head>
+<!-- ================= HERO + SHELF CAROUSEL ================= -->
+<section class="dhero">
+    <svg class="deco cloud cloud--1 bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+    <svg class="deco leaf leaf--1 bob" viewBox="0 0 32 32"><use href="#i-leaf"/></svg>
+    <svg class="deco sparkle sparkle--1" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
 
-<body class="center">
+    <div class="dhero__copy">
+        <span class="eyebrow">{% if hour < 12 %}good morning{% elif hour < 18 %}good afternoon{% else %}good evening{% endif %},</span>
+        <h1>{{ user.first_name|default:user.username }}, <span class="script">let's glow</span></h1>
+        <p>Skincare without the guesswork. Here's your day at a glance.</p>
 
-    <div class="home-container">
-
-        <div class="brand">Face Value</div>
-
-        <div class="subtitle">
-            Skincare Without the Guesswork
+        <div class="dhero__chips">
+            <div class="streak" id="streakBadge" title="Best streak: {{ best_streak }} day{{ best_streak|pluralize }}">
+                <span class="streak__flame">🔥</span>
+                <div><strong id="streakNum">{{ streak }}</strong><span>day streak</span></div>
+            </div>
+            <div class="streak streak--sky">
+                <span class="streak__flame">🌿</span>
+                <div><strong id="doneChip">{{ routines_done }}/{{ routines|length }}</strong><span>routines today</span></div>
+            </div>
         </div>
-
-        <p class="welcome">
-            Welcome back, {{ user.first_name }}!
-        </p>
-
-        <p class="intro">
-            Face Value helps you explore skincare products and figure out what
-            actually works for your skin type. Browse ingredients, compare
-            products, and build a routine that fits you.
-        </p>
-
-        <div class="ribbon" aria-hidden="true">
-            <span>✦ Know your ingredients ✦ Build your shelf ✦ Find what works for your skin ✦ Skincare without the guesswork</span>
+        <div class="dhero__cta">
+            <a class="btn btn-primary" href="{% url 'product_library:add' %}"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add product</a>
+            <a class="btn btn-ghost" href="{% url 'routine_builder:list' %}">My routines</a>
+            <a class="btn btn-ghost" href="{% url 'product_library:list' %}">Open library</a>
         </div>
-
-        <div class="home-actions">
-
-            <a href="{% url 'product_library:list' %}" class="tile">
-                <span class="tile-icon">🧴</span>
-                Products
-            </a>
-
-            <a href="{% url 'user_profile:profile' %}" class="tile">
-                <span class="tile-icon">🌼</span>
-                Profile
-            </a>
-
-            <a href="{% url 'user_settings:settings' %}" class="tile">
-                <span class="tile-icon">🎛️</span>
-                Settings
-            </a>
-
-        </div>
-
-        <form method="post" action="{% url 'login:logout' %}">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-        </form>
-
     </div>
 
-    <script src="{% static 'js/base/base.js' %}"></script>
-</body>
-</html>
+    <div class="shelf tone-lime" id="shelf" role="region" aria-roledescription="carousel" aria-label="Your shelf" tabindex="0">
+        <span class="orb orb--a"></span><span class="orb orb--b"></span>
+        <div class="shelf__head"><span class="script">your shelf</span><span class="shelf__count" id="shelfCount">01 / {{ shelf|length|default:1|stringformat:"02d" }}</span></div>
+
+        <div class="shelf__stage">
+        {% for p in shelf %}
+            <article class="slide {% if forloop.first %}active{% endif %}" data-tone="{% cycle 'lime' 'sky' 'pink' 'sun' 'lav' as tone %}" aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+                <div class="slide__media">
+                    <div class="slide__arch">
+                        {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.product_name }}" loading="lazy">
+                        {% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ p.art }}"/></svg>{% endif %}
+                    </div>
+                </div>
+                <div class="slide__info">
+                    <span class="chip">{{ p.category }}</span>
+                    <h3>{{ p.product_name }}</h3>
+                    <p class="slide__brand">{{ p.brand }}</p>
+                    <a class="btn btn-primary btn-sm" href="{% url 'product_library:detail' p.pk %}">View details <span class="btn__arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span></a>
+                </div>
+            </article>
+        {% empty %}
+            <article class="slide active" data-tone="lime">
+                <div class="slide__media"><div class="slide__arch"><svg class="art" viewBox="0 0 120 160"><use href="#a-pump"/></svg></div></div>
+                <div class="slide__info">
+                    <span class="chip">Empty shelf</span>
+                    <h3>Your shelf is waiting</h3>
+                    <p class="slide__brand">Add a product with a photo and it will show up here.</p>
+                    <a class="btn btn-primary btn-sm" href="{% url 'product_library:add' %}">Add your first <span class="btn__arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span></a>
+                </div>
+            </article>
+        {% endfor %}
+        </div>
+
+        {% if shelf|length > 1 %}
+        <div class="shelf__ctrl">
+            <div class="shelf__thumbs" role="tablist" aria-label="Choose a product">
+                {% for p in shelf %}
+                <button type="button" class="sthumb tone-{% cycle 'lime' 'sky' 'pink' 'sun' 'lav' %} {% if forloop.first %}active{% endif %}" role="tab" aria-label="{{ p.product_name }}">
+                    {% if p.image %}<img src="{{ p.image.url }}" alt="">{% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ p.art }}"/></svg>{% endif %}
+                </button>
+                {% endfor %}
+            </div>
+            <div class="shelf__arrows">
+                <button class="icon-btn" type="button" id="shelfPrev" aria-label="Previous"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg></button>
+                <button class="icon-btn" type="button" id="shelfNext" aria-label="Next"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="stats">
+    <article class="stat tone-lime reveal">
+        <span class="stat__icon"><svg viewBox="0 0 24 24"><use href="#ic-sprout"/></svg></span>
+        <strong><span data-count="{{ streak }}">{{ streak }}</span><small>days</small></strong>
+        <span>Current streak</span><em>Best: {{ best_streak }}</em>
+    </article>
+    <article class="stat tone-sky reveal">
+        <svg class="ring ring--stat" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5"/><circle class="ring__fg" data-pct="{{ done_pct }}" cx="18" cy="18" r="15.5"/></svg>
+        <strong><span data-count="{{ done_pct }}">{{ done_pct }}</span><small>%</small></strong>
+        <span>Done today</span><em>{{ routines_done }} of {{ routines|length }} routines</em>
+    </article>
+    <article class="stat tone-sun reveal">
+        <span class="stat__icon"><svg viewBox="0 0 24 24"><use href="#ic-flask"/></svg></span>
+        <strong><span data-count="{{ products|length }}">{{ products|length }}</span><small>items</small></strong>
+        <span>On your shelf</span><em>{{ shelf|length }} active</em>
+    </article>
+    <article class="stat tone-pink reveal">
+        <span class="stat__icon"><svg viewBox="0 0 24 24"><use href="#ic-bell"/></svg></span>
+        <strong><span data-count="{{ caution_total }}">{{ caution_total }}</span><small>new</small></strong>
+        <span>Heads-ups</span><em>Ingredient alerts</em>
+    </article>
+</section>
+
+<!-- ================= TRACKER + SIDE ================= -->
+<div class="dgrid">
+    <section class="card tracker reveal" id="tracker">
+        <header class="card__head">
+            <h2>Today's <span class="script">routine</span></h2>
+            {% if routines %}
+            <div class="tabs" role="tablist" id="routineTabs">
+                <button type="button" class="tab active" role="tab" data-filter="all">All</button>
+                {% for t in routine_types %}<button type="button" class="tab" role="tab" data-filter="{{ t }}">{{ t|title }}</button>{% endfor %}
+            </div>
+            {% endif %}
+        </header>
+
+        <p class="tracker__sub">{{ today_name }} · <a href="{% url 'routine_builder:list' %}">Plan your week</a></p>
+
+        <div class="week" aria-label="Last 7 days">
+            {% for d in week %}
+            <span class="week__day {% if d.done %}done{% endif %} {% if d.today %}today{% endif %}" data-today="{{ d.today|yesno:'1,0' }}"><i></i>{{ d.label }}</span>
+            {% endfor %}
+        </div>
+
+        {% for r in routines %}
+        <article class="routine {% if r.done_today %}is-done{% endif %}" data-routine="{{ r.id }}" data-type="{{ r.routine_type|lower }}">
+            <div class="routine__head">
+                <h3>{{ r.routine_name }} <span class="chip chip--sky">{{ r.routine_type|title }}</span>{% if r.sched_time %} <span class="chip chip--sun">{{ r.sched_time|time:"g:i A" }}</span>{% endif %}</h3>
+                <span class="routine__tools"><a class="routine__edit" href="{% url 'routine_builder:edit' r.id %}" aria-label="Edit {{ r.routine_name }}"><svg viewBox="0 0 24 24"><use href="#ic-edit"/></svg></a><span class="routine__pct">0%</span></span>
+            </div>
+            <div class="leafbar"><i></i><svg class="leaf" viewBox="0 0 32 32"><use href="#i-leaf"/></svg></div>
+            <ul class="steps-list">
+                {% for it in r.step_list %}
+                <li>
+                    <label class="check">
+                        <input type="checkbox" {% if r.done_today %}checked{% endif %}>
+                        <span class="check__box"><svg viewBox="0 0 24 24"><use href="#ic-check"/></svg></span>
+                        <span class="check__thumb tone-{% cycle 'lime' 'sky' 'pink' 'sun' 'lav' %}">{% if it.product.image %}<img src="{{ it.product.image.url }}" alt="">{% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ it.product.art }}"/></svg>{% endif %}</span>
+                        <span class="check__text"><b>{{ it.step_name }}</b><em>{{ it.product.product_name }}</em></span>
+                    </label>
+                </li>
+                {% empty %}
+                <li><label class="check"><input type="checkbox" {% if r.done_today %}checked{% endif %}><span class="check__box"><svg viewBox="0 0 24 24"><use href="#ic-check"/></svg></span><span class="check__text"><b>Mark routine as done</b></span></label></li>
+                {% endfor %}
+            </ul>
+        </article>
+        {% empty %}
+        <div class="empty">
+            <div class="empty__art"><svg class="art tone-lime" viewBox="0 0 120 160"><use href="#a-dropper"/></svg></div>
+            {% if off_today %}
+            <h3>Nothing scheduled today</h3>
+            <p>You have {{ off_today }} routine{{ off_today|pluralize }}, just not on a {{ today_name }}. Rest day, or add today to one of them.</p>
+            <a class="btn btn-primary" href="{% url 'routine_builder:list' %}">Plan your week</a>
+            {% elif products %}
+            <h3>No routines yet</h3>
+            <p>Line up your products into a morning or evening routine and it will show up here each day.</p>
+            <a class="btn btn-primary" href="{% url 'routine_builder:create' %}">Build a routine</a>
+            {% else %}
+            <h3>No routines yet</h3>
+            <p>Add the products you own first, then put them in order in the routine builder.</p>
+            <a class="btn btn-primary" href="{% url 'product_library:add' %}">Add a product</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+
+    <div class="stack">
+        <!-- Check-in -->
+        <section class="card checkin reveal" id="checkin">
+            <header class="card__head"><h2>Daily <span class="script">check-in</span></h2></header>
+            <p class="checkin__label">How does your skin feel?</p>
+            <div class="moods" id="moods" role="radiogroup" aria-label="Skin mood">
+                <button type="button" class="mood" role="radio" aria-checked="false" data-mood="dry"><span>🌵</span>Dry</button>
+                <button type="button" class="mood" role="radio" aria-checked="false" data-mood="calm"><span>😌</span>Calm</button>
+                <button type="button" class="mood" role="radio" aria-checked="false" data-mood="good"><span>😊</span>Good</button>
+                <button type="button" class="mood" role="radio" aria-checked="false" data-mood="glow"><span>✨</span>Glowing</button>
+                <button type="button" class="mood" role="radio" aria-checked="false" data-mood="irritated"><span>🌶️</span>Irritated</button>
+            </div>
+            <p class="mood-msg" id="moodMsg">Tap one to get a gentle tip for today.</p>
+
+            <p class="checkin__label">Water <b id="waterCount">0/8</b></p>
+            <div class="drops" id="drops">
+                {% for i in "12345678" %}<button type="button" class="drop" aria-label="Glass {{ i }}"><svg viewBox="0 0 24 24"><use href="#ic-drop"/></svg></button>{% endfor %}
+            </div>
+            <p class="note">Saved on this device only. General wellness tips, not medical advice.</p>
+        </section>
+
+        <!-- Vibe -->
+        <section class="card vibe reveal">
+            <header class="card__head"><h2>Skin health <span class="script">vibe</span></h2></header>
+            <div class="vibe__cards">
+                {% for v in vibe %}
+                <div class="vibe__item vibe--{{ v.key }}" data-value="{{ v.value }}">
+                    <div class="ring-wrap"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5"/><circle class="ring__fg" cx="18" cy="18" r="15.5"/></svg><b>{{ v.value }}</b></div>
+                    <strong>{{ v.label }}</strong><span>{{ v.hint }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="note">Based on the products and routines you've saved. A friendly guide, not a medical assessment.</p>
+        </section>
+    </div>
+</div>
+
+<!-- ================= TIPS CAROUSEL ================= -->
+<section class="tips reveal">
+    <header class="tips__head">
+        <div><span class="eyebrow">daily inspiration</span><h2>Little habits, <span class="script">big</span> glow</h2></div>
+        <div class="tips__arrows">
+            <button class="icon-btn" type="button" id="tipPrev" aria-label="Previous tips"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg></button>
+            <button class="icon-btn" type="button" id="tipNext" aria-label="Next tips"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></button>
+        </div>
+    </header>
+    <div class="tips__track" id="tipTrack">
+        {% for title, text in tips %}
+        <article class="tipcard tipcard--{% cycle 'a' 'b' 'c' 'd' %}">
+            <svg class="q" viewBox="0 0 48 40"><use href="#i-quote"/></svg>
+            <p>{{ text }}</p>
+            <footer><b>{{ title }}</b><span>Tip {{ forloop.counter|stringformat:"02d" }}</span></footer>
+        </article>
+        {% endfor %}
+    </div>
+    <div class="tips__bar"><i id="tipBar"></i></div>
+</section>
+
+<!-- ================= CLASH CHECKER ================= -->
+<section class="clash reveal" id="clash">
+    <svg class="deco cloud cloud--c bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+    <div class="clash__copy">
+        <span class="eyebrow">before you layer</span>
+        <h2>Ingredient clash checker</h2>
+        <p>Tap two products from your shelf to see whether their ingredients may be too much together.</p>
+    </div>
+    <div class="clash__card">
+        {% if products|length >= 2 %}
+        <div class="picks" id="picks" role="group" aria-label="Pick two products">
+            {% for p in products %}
+            <button type="button" class="pick tone-{% cycle 'lime' 'sky' 'pink' 'sun' 'lav' %}" data-id="{{ p.id }}" aria-pressed="false">
+                <span class="pick__img">{% if p.image %}<img src="{{ p.image.url }}" alt="">{% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ p.art }}"/></svg>{% endif %}</span>
+                <span class="pick__name">{{ p.product_name }}</span>
+            </button>
+            {% endfor %}
+        </div>
+        <div class="slots"><span id="slotA">Pick one…</span><b>+</b><span id="slotB">Pick another…</span></div>
+        <div class="clash__out" id="clashOut" aria-live="polite"></div>
+        {% else %}
+        <div class="empty empty--sm">
+            <div class="empty__art"><svg class="art tone-sky" viewBox="0 0 120 160"><use href="#a-jar"/></svg></div>
+            <p>Add at least two products (with ingredients) to check how they layer.</p>
+            <a class="btn btn-primary btn-sm" href="{% url 'product_library:add' %}">Add products</a>
+        </div>
+        {% endif %}
+        <p class="note">General guidance only. It isn't medical advice. If you have sensitive skin or a condition, check with a dermatologist.</p>
+    </div>
+</section>
+
+<!-- ================= ALERTS + ACTIVITY ================= -->
+<div class="dgrid dgrid--even">
+    <section class="card reveal" id="alerts">
+        <header class="card__head"><h2>Heads <span class="script">up</span></h2>{% if nav_unread_count %}<span class="chip chip--pink">{{ nav_unread_count }} new</span>{% endif %}</header>
+        {% for a in alerts %}
+        <div class="alert alert--{{ a.severity|lower }}"><strong>{{ a.interaction.ingredient_1 }} + {{ a.interaction.ingredient_2 }}</strong><p>{{ a.alert_message }}</p></div>
+        {% endfor %}
+        {% for n in reminders %}
+        <div class="alert alert--info"><strong>{{ n.title }}</strong><p>{{ n.message }}</p></div>
+        {% endfor %}
+        {% if not alerts and not reminders %}<p class="muted-line">🍃 All calm. No ingredient cautions or reminders right now.</p>{% endif %}
+    </section>
+
+    <section class="card reveal">
+        <header class="card__head"><h2>Recent <span class="script">activity</span></h2><a class="more" href="{% url 'product_library:list' %}">Library →</a></header>
+        <ul class="activity">
+            {% for h in activity %}
+            <li><i></i><div><strong>{{ h.product.product_name }}</strong> <span>{{ h.action }}</span><time>{{ h.action_date|timesince }} ago</time></div></li>
+            {% empty %}<li class="muted-line">Nothing yet. Add a product to get your log started.</li>{% endfor %}
+        </ul>
+    </section>
+</div>
+</main>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/home/home.js' %}"></script>{% endblock %}

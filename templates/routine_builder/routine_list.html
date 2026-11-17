@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Routines{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/routine_builder/routine_builder.css' %}">{% endblock %}
+
+{% block content %}
+<main class="rb" id="rb" data-schedule-url="{% url 'routine_builder:schedule' 0 %}" data-new-url="{% url 'routine_builder:create' %}">
+
+    <!-- ================= HERO ================= -->
+    <header class="rb-hero">
+        <svg class="deco cloud cloud--r bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+        <svg class="deco sparkle sparkle--r" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div class="rb-hero__copy">
+            <span class="eyebrow">your daily ritual</span>
+            <h1>Build your <span class="script">routine</span></h1>
+            <p>Line up your products step by step, then choose the days they happen. Your dashboard does the rest.</p>
+            <a href="{% url 'routine_builder:create' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> New routine</a>
+        </div>
+        <div class="rb-hero__art" aria-hidden="true">
+            <svg class="art tone-sun" viewBox="0 0 120 160"><use href="#a-tube"/></svg>
+            <svg class="art tone-lime big" viewBox="0 0 120 160"><use href="#a-dropper"/></svg>
+            <svg class="art tone-lav" viewBox="0 0 120 160"><use href="#a-jar"/></svg>
+        </div>
+        <div class="rb-hero__stats">
+            <div><strong>{{ active_count }}</strong><span>active</span></div>
+            <div><strong id="statWeek">{{ weekly_sessions }}</strong><span>per week</span></div>
+        </div>
+    </header>
+
+    {% if not routines and not product_count %}
+    <!-- Nothing to build with yet -->
+    <div class="rb-empty">
+        <div class="rb-empty__art"><svg class="art tone-sky" viewBox="0 0 120 160"><use href="#a-bottle"/></svg></div>
+        <h3>Start with your shelf</h3>
+        <p>Routines are made from the products in your library. Add a couple first, then come back to put them in order.</p>
+        <a href="{% url 'product_library:add' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add a product</a>
+    </div>
+    {% else %}
+
+    <!-- ================= WEEKLY PLANNER ================= -->
+    <section class="card planner reveal" id="planner">
+        <header class="card__head">
+            <div>
+                <h2>Your <span class="script">week</span></h2>
+                <p class="muted-line">Tap a box to choose which routines happen that day.</p>
+            </div>
+            <span class="chip chip--sky">Today · {{ today_name }}</span>
+        </header>
+
+        <div class="planner__scroll">
+            <div class="pgrid" role="table" aria-label="Weekly routine planner">
+                <div class="pgrid__corner" role="presentation"></div>
+                {% for d in days %}
+                <div class="pgrid__day {% if d.today %}is-today{% endif %}" role="columnheader"><b>{{ d.short }}</b></div>
+                {% endfor %}
+
+                {% for row in planner %}
+                <div class="pgrid__slot tone-{{ row.tone }}" role="rowheader"><span>{{ row.emoji }}</span>{{ row.label }}</div>
+                {% for cell in row.cells %}
+                <button type="button" class="pcell tone-{{ row.tone }} {% if cell.today %}is-today{% endif %}"
+                        data-slot="{{ row.key }}" data-day="{{ cell.day }}" data-label="{{ cell.full }} · {{ row.label }}"
+                        aria-label="{{ cell.full }} {{ row.label }}: choose routines">
+                    <span class="pcell__list">
+                        {% for r in cell.routines %}<span class="pchip {% if not r.is_active %}is-paused{% endif %}" data-id="{{ r.pk }}">{{ r.routine_name }}</span>{% endfor %}
+                    </span>
+                    <span class="pcell__add" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+                </button>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= ROUTINE CARDS ================= -->
+    <section class="rlist" id="routines">
+        <header class="rlist__head">
+            <div><span class="eyebrow">all of them</span><h2>My <span class="script">routines</span></h2></div>
+            <span class="chip">{{ routines|length }} routine{{ routines|length|pluralize }}</span>
+        </header>
+
+        {% if routines %}
+        <div class="rgrid">
+            {% for r in routines %}
+            <article class="rcard tone-{{ r.tone }} {% if not r.is_active %}is-paused{% endif %}" data-routine="{{ r.pk }}">
+                <div class="rcard__head">
+                    <div class="rcard__tags">
+                        <span class="rcard__slot">{{ r.emoji }} {{ r.routine_type|title }}</span>
+                        {% if not r.is_active %}<span class="rcard__paused">Paused</span>{% endif %}
+                    </div>
+                    <h3>{{ r.routine_name }}</h3>
+                    <p>{% if r.description %}{{ r.description|truncatechars:90 }}{% else %}{{ r.step_list|length }} step{{ r.step_list|length|pluralize }} · {{ r.time_label }}{% endif %}</p>
+                </div>
+
+                <div class="rcard__body">
+                    <div class="rsteps" aria-label="Steps">
+                        {% for it in r.preview_steps %}
+                        <span class="rsteps__item tone-{% cycle 'lime' 'sky' 'pink' 'sun' 'lav' %}" title="{{ it.step_name }} · {{ it.product.product_name }}">
+                            {% if it.product.image %}<img src="{{ it.product.image.url }}" alt="">{% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ it.product.art }}"/></svg>{% endif %}
+                        </span>
+                        {% endfor %}
+                        {% if r.more_steps %}<span class="rsteps__more">+{{ r.more_steps }}</span>{% endif %}
+                        <span class="rsteps__count">{{ r.step_list|length }} step{{ r.step_list|length|pluralize }}</span>
+                    </div>
+
+                    <ol class="rcard__names">
+                        {% for it in r.step_list|slice:":3" %}<li><b>{{ it.step_name }}</b> <em>{{ it.product.product_name }}</em></li>{% endfor %}
+                        {% if r.step_list|length > 3 %}<li class="rcard__more">and {{ r.step_list|length|add:"-3" }} more…</li>{% endif %}
+                    </ol>
+
+                    <div class="rdays" role="group" aria-label="Scheduled days">
+                        {% for d in r.day_dots %}<span class="rdays__d {% if d.on %}on{% endif %}" data-day="{{ d.key }}" title="{{ d.full }}">{{ d.letter }}</span>{% endfor %}
+                        <span class="rdays__time"><svg viewBox="0 0 24 24"><use href="#ic-clock"/></svg>{{ r.time_label }}</span>
+                    </div>
+
+                    {% if r.clash_count %}<p class="rcard__warn">⚠️ {{ r.clash_count }} ingredient heads-up{{ r.clash_count|pluralize }}</p>{% endif %}
+                </div>
+
+                <div class="rcard__foot">
+                    <a class="btn btn-primary btn-sm" href="{% url 'routine_builder:edit' r.pk %}"><svg viewBox="0 0 24 24"><use href="#ic-edit"/></svg> Edit</a>
+                    <form method="post" action="{% url 'routine_builder:status' r.pk %}">{% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm">{% if r.is_active %}Pause{% else %}Resume{% endif %}</button>
+                    </form>
+                    <button type="button" class="icon-btn rcard__del" data-delete="{{ r.pk }}" data-name="{{ r.routine_name }}" aria-label="Delete {{ r.routine_name }}"><svg viewBox="0 0 24 24"><use href="#ic-trash"/></svg></button>
+                </div>
+            </article>
+            {% endfor %}
+
+            <a class="rcard rcard--new" href="{% url 'routine_builder:create' %}">
+                <span class="rcard--new__plus"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>
+                <strong>Add another routine</strong>
+                <span>Morning, afternoon or evening</span>
+            </a>
+        </div>
+        {% else %}
+        <div class="rb-empty">
+            <div class="rb-empty__art"><svg class="art tone-lime" viewBox="0 0 120 160"><use href="#a-pump"/></svg></div>
+            <h3>No routines yet</h3>
+            <p>Make your first one: pick a time of day, add products in the order you use them, and choose your days.</p>
+            <a href="{% url 'routine_builder:create' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Build my first routine</a>
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+</main>
+
+<!-- Planner dialog: toggle routines for one day + slot -->
+<dialog id="cellDialog" class="dlg" aria-labelledby="cellTitle">
+    <h3 id="cellTitle">Plan this day</h3>
+    <p class="muted-line" id="cellHint">Switch on the routines you want on this day.</p>
+    <ul class="swlist" id="cellList"></ul>
+    <p class="cell-status" id="cellStatus" aria-live="polite"></p>
+    <div class="form-actions"><a class="btn btn-ghost" id="cellNew" href="#">New routine here</a><button type="button" class="btn btn-primary" data-close>Done</button></div>
+</dialog>
+
+<dialog id="deleteDialog" class="dlg">
+    <form method="post" id="deleteForm" action="">{% csrf_token %}
+        <h3 id="deleteTitle">Remove this routine?</h3>
+        <p class="muted-line">The routine, its schedule, its ingredient heads-ups and its past check-ins will be removed, which can change your streak. Your products stay on your shelf. Pausing keeps everything and just hides it from your dashboard.</p>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" data-close>Keep it</button><button type="submit" class="btn btn-danger">Delete</button></div>
+    </form>
+</dialog>
+
+{{ routines_json|json_script:"rb-routines" }}
+<template id="deleteUrlTpl">{% url 'routine_builder:delete' 0 %}</template>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/routine_builder/routine_list.js' %}"></script>{% endblock %}

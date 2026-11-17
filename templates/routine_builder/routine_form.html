@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if routine %}Edit routine{% else %}New routine{% endif %}{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/home/home.css' %}">
+<link rel="stylesheet" href="{% static 'css/routine_builder/routine_builder.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="rb" id="rbForm" data-clash-url="{% url 'routine_builder:clash' %}" data-max-steps="{{ max_steps }}">
+    <div class="top-bar"><a href="{% url 'routine_builder:list' %}" class="back-link"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg> Back to routines</a></div>
+
+    <form method="post" class="bform" id="builderForm" novalidate>
+        {% csrf_token %}
+
+        <div class="bform__main">
+            <header class="bform__title">
+                <span class="eyebrow">{% if routine %}tweak your ritual{% else %}routine builder{% endif %}</span>
+                <h1>{% if routine %}Edit your <span class="script">routine</span>{% else %}Build your <span class="script">ritual</span>{% endif %}</h1>
+            </header>
+
+            {% if error %}<div class="error" role="alert" id="serverError">{{ error }}</div>{% endif %}
+            <div class="error" role="alert" id="clientError" hidden></div>
+
+            <!-- 1. basics -->
+            <section class="card bstep">
+                <header class="bstep__head"><span class="bstep__n">1</span><h2>The <span class="script">basics</span></h2></header>
+
+                <div class="form-group">
+                    <label for="rName">Routine name</label>
+                    <input type="text" id="rName" name="routine_name" maxlength="{{ name_max }}" placeholder="e.g. Glow-up mornings" autocomplete="off" value="{{ initial.name }}">
+                </div>
+
+                <fieldset class="slotpick">
+                    <legend>When does it happen?</legend>
+                    <div class="slotpick__row">
+                        {% for s in slots %}
+                        <label class="slotpick__opt tone-{{ s.tone }}">
+                            <input type="radio" name="routine_type" value="{{ s.key }}" {% if initial.type == s.key %}checked{% endif %}>
+                            <span class="slotpick__face"><i>{{ s.emoji }}</i><b>{{ s.label }}</b></span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <div class="form-group">
+                    <label for="rDesc">A little note <span class="optional">(optional)</span></label>
+                    <textarea id="rDesc" name="description" rows="2" maxlength="500" placeholder="What is this routine for?">{{ initial.description }}</textarea>
+                </div>
+            </section>
+
+            <!-- 2. days -->
+            <section class="card bstep">
+                <header class="bstep__head"><span class="bstep__n">2</span><h2>Pick the <span class="script">days</span></h2></header>
+
+                <div class="daypick" role="group" aria-label="Days of the week">
+                    {% for d in days %}
+                    <label class="daypick__opt">
+                        <input type="checkbox" name="days" value="{{ d.key }}" {% if d.key in initial.days %}checked{% endif %}>
+                        <span title="{{ d.full }}">{{ d.short }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <div class="quick">
+                    <button type="button" class="pill" data-days="all">Every day</button>
+                    <button type="button" class="pill" data-days="weekdays">Weekdays</button>
+                    <button type="button" class="pill" data-days="weekend">Weekend</button>
+                    <button type="button" class="pill" data-days="none">Clear</button>
+                </div>
+
+                <div class="timerow">
+                    <label for="rTime">Reminder time</label>
+                    <input type="time" id="rTime" name="time" value="{{ initial.time }}">
+                </div>
+            </section>
+
+            <!-- 3. steps -->
+            <section class="card bstep">
+                <header class="bstep__head">
+                    <span class="bstep__n">3</span><h2>Add your <span class="script">steps</span></h2>
+                    <span class="chip chip--sun" id="stepCount">0 steps</span>
+                </header>
+                <p class="muted-line bstep__lede">Tap a product to add it, or drag it across. Drag steps to reorder, thin textures first.</p>
+
+                <div class="studio">
+                    <div class="shelfpick">
+                        <div class="shelfpick__head">
+                            <h3>Your shelf</h3>
+                            <div class="search-box"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg><input type="text" id="shelfSearch" placeholder="Search products…" autocomplete="off"></div>
+                        </div>
+                        <div class="shelfpick__grid" id="shelfGrid" aria-label="Products you can add"></div>
+                        {% if not product_count %}
+                        <div class="rb-empty rb-empty--sm">
+                            <p>Your shelf is empty. Add a product first.</p>
+                            <a class="btn btn-primary btn-sm" href="{% url 'product_library:add' %}">Add a product</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="stepsbox">
+                        <h3>Routine order</h3>
+                        <ol class="steplist" id="stepList" aria-live="polite"></ol>
+                        <div class="dropzone-steps" id="stepDrop"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg><span>Drop a product here</span></div>
+                    </div>
+                </div>
+                <noscript><p class="error">The routine builder needs JavaScript to add steps.</p></noscript>
+            </section>
+        </div>
+
+        <!-- ============ live preview ============ -->
+        <aside class="bform__side">
+            <div class="preview card">
+                <header class="card__head"><h2>Live <span class="script">preview</span></h2><span class="chip chip--sky" id="pvType">Morning</span></header>
+
+                <article class="routine" id="pvRoutine">
+                    <div class="routine__head">
+                        <h3 id="pvName">Your routine</h3>
+                        <span class="routine__pct" id="pvPct">0%</span>
+                    </div>
+                    <div class="leafbar"><i></i><svg class="leaf" viewBox="0 0 32 32"><use href="#i-leaf"/></svg></div>
+                    <ul class="steps-list" id="pvSteps"></ul>
+                    <p class="pv-empty" id="pvEmpty">Add a product to see your routine take shape.</p>
+                </article>
+
+                <div class="pv-meta">
+                    <div class="rdays" id="pvDays" role="group" aria-label="Chosen days"></div>
+                    <span class="rdays__time" id="pvTime"></span>
+                </div>
+                <p class="note">Try the checks. Nothing here is saved until you press Save.</p>
+
+                <div class="clashbox" id="clashBox" aria-live="polite"></div>
+
+                <div class="preview__actions">
+                    <button type="submit" class="btn btn-lime btn-lg">{% if routine %}Save changes{% else %}Save routine{% endif %}</button>
+                    <a class="btn btn-ghost" href="{% url 'routine_builder:list' %}">Cancel</a>
+                </div>
+                <p class="note">Ingredient notes are general guidance, not medical advice.</p>
+            </div>
+        </aside>
+    </form>
+</main>
+
+{{ initial|json_script:"rb-initial" }}
+{{ products_json|json_script:"rb-products" }}
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/routine_builder/routine_form.js' %}"></script>{% endblock %}

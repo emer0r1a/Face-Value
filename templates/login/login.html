@@ -1,64 +1,36 @@
+{% extends "auth_base.html" %}
 {% load static %}
+{% block title %}Log in{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Face Value</title>
+{% block card %}
+<div class="container">
+    <h2>Welcome <span class="script">back</span></h2>
+    <p class="lede">Pick up your routine where you left off.</p>
 
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/login/login.css' %}">
-</head>
+    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
 
-<body class="center">
+    <form method="post" action="{% url 'login:login' %}" id="loginForm" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
-    <div class="container">
-
-        <div class="brand">Face Value</div>
-        <div class="subtitle">See what works for your skin</div>
-
-        <h2>Login</h2>
-
-        {% if error %}
-            <div class="error">{{ error }}</div>
-        {% endif %}
-
-        <form method="post" action="{% url 'login:login' %}" id="loginForm">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    required
-                >
-            </div>
-
-            <button type="submit">Login</button>
-        </form>
-
-        <div class="link-row">
-            Don't have an account?
-            <a href="{% url 'register:register' %}">Register</a>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ username|default:'' }}" autocomplete="username" autofocus required>
         </div>
 
-    </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div class="pw-field">
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+                <button type="button" class="pw-toggle" data-toggle-pw="password">Show</button>
+            </div>
+        </div>
 
-    <script src="{% static 'js/base/base.js' %}"></script>
-    <script src="{% static 'js/login/login.js' %}"></script>
+        <button type="submit" class="btn btn-primary btn-lg">Log in <span class="btn__arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span></button>
+    </form>
 
-</body>
-</html>
+    <div class="link-row">New here? <a href="{% url 'register:register' %}">Create an account</a></div>
+</div>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/login/login.js' %}"></script>{% endblock %}

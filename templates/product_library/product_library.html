@@ -1,137 +1,100 @@
+{% extends "base.html" %}
 {% load static %}
+{% block title %}Product library{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Library - Face Value</title>
+{% block content %}
+<main class="library-container">
 
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">
-</head>
-
-<body>
-
-    <div class="library-container">
-
-        <div class="top-bar">
-            <a href="{% url 'home:home' %}" class="back-link">
-                ← Back to Home
-            </a>
+    <header class="lib-hero">
+        <svg class="deco cloud cloud--l bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+        <svg class="deco sparkle sparkle--l" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div class="lib-hero__copy">
+            <span class="eyebrow">my collection</span>
+            <h1>Your <span class="script">shelf</span></h1>
+            <p>Every product you own, with photos and ingredients, all in one place.</p>
+            <a href="{% url 'product_library:add' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add product</a>
         </div>
+        <div class="lib-hero__art" aria-hidden="true">
+            <svg class="art tone-pink" viewBox="0 0 120 160"><use href="#a-jar"/></svg>
+            <svg class="art tone-lime big" viewBox="0 0 120 160"><use href="#a-pump"/></svg>
+            <svg class="art tone-sun" viewBox="0 0 120 160"><use href="#a-dropper"/></svg>
+        </div>
+        <div class="lib-hero__stats">
+            <div><strong>{{ total_count }}</strong><span>product{{ total_count|pluralize }}</span></div>
+            <div><strong>{{ category_counts|length }}</strong><span>categor{{ category_counts|length|pluralize:"y,ies" }}</span></div>
+        </div>
+    </header>
 
-        <div class="brand">Face Value</div>
-        <div class="subtitle">Your product library</div>
+    <div class="toolbar" id="libTools" data-initial-q="{{ query }}" data-initial-cat="{{ selected_category }}">
+        <form method="get" class="filter-form" id="filterForm" role="search">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24"><use href="#ic-search"/></svg>
+                <input type="text" name="q" id="searchInput" value="{{ query }}" placeholder="Search name, brand or ingredient…" autocomplete="off">
+            </div>
+            <select id="sortSelect" aria-label="Sort products">
+                <option value="new">Newest first</option>
+                <option value="name">Name A–Z</option>
+                <option value="brand">Brand A–Z</option>
+            </select>
+            <noscript><button type="submit" class="btn btn-primary">Search</button></noscript>
+        </form>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">{{ message }}</div>
+        {% if category_counts %}
+        <div class="pills" id="pills" role="group" aria-label="Filter by category">
+            <button type="button" class="pill {% if not selected_category %}active{% endif %}" data-cat="">All <b>{{ total_count }}</b></button>
+            {% for cat, n in category_counts %}
+            <button type="button" class="pill {% if cat|lower == selected_category|lower %}active{% endif %}" data-cat="{{ cat }}">{{ cat }} <b>{{ n }}</b></button>
             {% endfor %}
-        {% endif %}
-
-        <div class="toolbar">
-
-            <form method="get" id="filterForm" class="filter-form">
-
-                <input
-                    type="text"
-                    name="q"
-                    id="searchInput"
-                    value="{{ query }}"
-                    placeholder="Search name, brand, or ingredient..."
-                >
-
-                <select name="category" id="categoryFilter">
-                    <option value="">All categories</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat }}" {% if cat|lower == selected_category|lower %}selected{% endif %}>
-                            {{ cat }}
-                        </option>
-                    {% endfor %}
-                </select>
-
-                <button type="submit" class="btn btn-secondary">Search</button>
-
-                {% if query or selected_category %}
-                    <a href="{% url 'product_library:list' %}" class="clear-link">Clear</a>
-                {% endif %}
-
-            </form>
-
-            <a href="{% url 'product_library:add' %}" class="btn btn-primary">
-                + Add Product
-            </a>
-
         </div>
-
-        <p class="result-count">
-            Showing {{ products|length }} of {{ total_count }} product{{ total_count|pluralize }}
-        </p>
-
-        {% if products %}
-
-            <div class="product-grid">
-
-                {% for product in products %}
-                    <div class="product-card tilt {% cycle 'c-blue' 'c-butter' 'c-mint' 'c-lilac' %}">
-
-                        <div class="card-art">
-                            <span class="category-tag">{{ product.category }}</span>
-                            <span class="art-letter">{{ product.product_name|first|upper }}</span>
-                        </div>
-
-                        <div class="card-body">
-
-                            <h3>{{ product.product_name }}</h3>
-                            <p class="brand-name">{{ product.brand }}</p>
-
-                            {% if product.description %}
-                                <p class="description">{{ product.description|truncatechars:110 }}</p>
-                            {% endif %}
-
-                            {% with items=product.product_ingredients.all %}
-                                {% if items %}
-                                    <div class="ingredients">
-                                        {% for item in items|slice:":6" %}
-                                            <span class="chip">{{ item.ingredient.ingredient_name }}</span>
-                                        {% endfor %}
-                                        {% if items|length > 6 %}
-                                            <span class="chip chip-more">+{{ items|length|add:"-6" }} more</span>
-                                        {% endif %}
-                                    </div>
-                                {% else %}
-                                    <p class="no-ingredients">No ingredients listed</p>
-                                {% endif %}
-                            {% endwith %}
-
-                            <span class="date">Added {{ product.date_added|date:"M j, Y" }}</span>
-
-                        </div>
-
-                    </div>
-                {% endfor %}
-
-            </div>
-
-        {% else %}
-
-            <div class="empty-state">
-                {% if query or selected_category %}
-                    <h3>No matching products</h3>
-                    <p>Try a different search or clear the filters.</p>
-                {% else %}
-                    <h3>Your shelf is empty</h3>
-                    <p>Add your first skincare product to start your library.</p>
-                    <a href="{% url 'product_library:add' %}" class="btn btn-primary">+ Add Product</a>
-                {% endif %}
-            </div>
-
         {% endif %}
-
     </div>
 
-    <script src="{% static 'js/base/base.js' %}"></script>
-    <script src="{% static 'js/product_library/product_library.js' %}"></script>
-</body>
-</html>
+    <p class="result-count" id="resultCount" aria-live="polite">Showing {{ products|length }} of {{ total_count }} product{{ total_count|pluralize }}</p>
+
+    {% if products %}
+    <div class="product-grid" id="grid">
+        {% for product in products %}
+        <a class="pcard {% cycle 'tone-lime' 'tone-sky' 'tone-sun' 'tone-pink' 'tone-lav' %} {% if product.status != 'active' %}is-archived{% endif %}"
+           href="{% url 'product_library:detail' product.pk %}"
+           data-name="{{ product.product_name|lower }}" data-brand="{{ product.brand|lower }}" data-cat="{{ product.category }}" data-added="{{ product.date_added|date:'U' }}"
+           data-search="{{ product.product_name|lower }} {{ product.brand|lower }} {{ product.category|lower }} {% for it in product.product_ingredients.all %}{{ it.ingredient.ingredient_name|lower }} {% endfor %}">
+            <div class="pcard__media">
+                <span class="pcard__cat">{{ product.category }}</span>
+                {% if product.status != 'active' %}<span class="pcard__status">Archived</span>{% endif %}
+                <div class="pcard__arch">
+                    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.product_name }}" loading="lazy">
+                    {% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ product.art }}"/></svg>{% endif %}
+                </div>
+            </div>
+            <div class="pcard__label">
+                <div><h3>{{ product.product_name }}</h3><p>{{ product.brand }}</p></div>
+                <span class="pcard__go"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span>
+            </div>
+            <div class="pcard__foot">
+                {% with items=product.product_ingredients.all %}
+                    {% if items %}<div class="ingredients">{% for item in items|slice:":3" %}<span class="chip">{{ item.ingredient.ingredient_name }}</span>{% endfor %}{% if items|length > 3 %}<span class="chip chip-more">+{{ items|length|add:"-3" }}</span>{% endif %}</div>
+                    {% else %}<p class="no-ingredients">No ingredients listed</p>{% endif %}
+                {% endwith %}
+                <span class="date">Added {{ product.date_added|date:"M j, Y" }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="empty-state" id="emptyState" {% if products %}hidden{% endif %}>
+        {% if total_count %}
+            <div class="empty-art"><svg class="art tone-sky" viewBox="0 0 120 160"><use href="#a-bottle"/></svg></div>
+            <h3>No matching products</h3><p>Try a different search or pick another category.</p>
+            <button type="button" class="btn btn-ghost" id="clearFilters">Clear filters</button>
+        {% else %}
+            <div class="empty-art"><svg class="art tone-lime" viewBox="0 0 120 160"><use href="#a-pump"/></svg></div>
+            <h3>Your shelf is empty</h3><p>Add your first skincare product, ideally with a photo, to start your library.</p>
+            <a href="{% url 'product_library:add' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add product</a>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/product_library/product_library.js' %}"></script>{% endblock %}

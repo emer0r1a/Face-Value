@@ -1,74 +1,65 @@
+{% extends "auth_base.html" %}
 {% load static %}
+{% block title %}Create account{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/register/register.css' %}">{% endblock %}
+{% block art_class %}auth-art--lime{% endblock %}
+{% block art_copy %}<span class="eyebrow">join the club</span><h2>Grow a routine that <span class="script">sticks</span>.</h2>{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Face Value</title>
+{% block card %}
+<div class="container">
+    <h2>Create <span class="script">account</span></h2>
+    <p class="lede">Free to join, and it takes under a minute.</p>
 
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/register/register.css' %}">
-</head>
+    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
 
-<body class="center">
+    <form method="post" action="{% url 'register:register' %}" id="registerForm" novalidate>
+        {% csrf_token %}
 
-    <div class="container">
-
-        <div class="brand">Face Value</div>
-        <div class="subtitle">Create your account</div>
-
-        <h2>Register</h2>
-
-        {% if error %}
-            <div class="error">{{ error }}</div>
-        {% endif %}
-
-        <form method="post" action="{% url 'register:register' %}" id="registerForm">
-            {% csrf_token %}
-
+        <div class="grid-2">
             <div class="form-group">
-                <label for="first_name">First Name</label>
-                <input type="text" id="first_name" name="first_name" required>
+                <label for="first_name">First name</label>
+                <input type="text" id="first_name" name="first_name" value="{{ form.first_name|default:'' }}" autocomplete="given-name" required>
             </div>
-
             <div class="form-group">
-                <label for="last_name">Last Name</label>
-                <input type="text" id="last_name" name="last_name" required>
+                <label for="last_name">Last name</label>
+                <input type="text" id="last_name" name="last_name" value="{{ form.last_name|default:'' }}" autocomplete="family-name" required>
             </div>
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <div class="form-group">
-                <label for="confirm_password">Confirm Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
-            </div>
-
-            <button type="submit">Register</button>
-        </form>
-
-        <div class="link-row">
-            Already have an account?
-            <a href="{% url 'login:login' %}">Login</a>
         </div>
 
-    </div>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ form.username|default:'' }}" autocomplete="username" required>
+        </div>
 
-    <script src="{% static 'js/base/base.js' %}"></script>
-    <script src="{% static 'js/register/register.js' %}"></script>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ form.email|default:'' }}" autocomplete="email" required>
+        </div>
 
-</body>
-</html>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div class="pw-field">
+                <input type="password" id="password" name="password" autocomplete="new-password" required>
+                <button type="button" class="pw-toggle" data-toggle-pw="password">Show</button>
+            </div>
+            <div class="grow" aria-live="polite">
+                <svg class="leaf" viewBox="0 0 32 32"><use href="#i-leaf"/></svg>
+                <div class="grow__bar"><i id="pwBar"></i></div>
+                <span class="grow__label" id="pwLabel">Plant a seed</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm password</label>
+            <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required>
+            <div class="field-hint" id="matchHint"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg">Create account <span class="btn__arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span></button>
+    </form>
+
+    <div class="link-row">Already have an account? <a href="{% url 'login:login' %}">Log in</a></div>
+</div>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/register/register.js' %}"></script>{% endblock %}

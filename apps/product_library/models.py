@@ -12,6 +12,7 @@ class Product(models.Model):
     brand = models.CharField(max_length=100)
     category = models.CharField(max_length=50)
     description = models.TextField(blank=True)
+    image = models.ImageField(upload_to="product_images/", blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default="active")
 

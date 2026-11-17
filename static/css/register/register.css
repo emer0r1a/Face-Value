@@ -1,3 +1,2 @@
-.container { --band: var(--lilac); width: 100%; max-width: 440px; }
-.container h2 { text-align: center; font-size: 26px; margin-bottom: 22px; }
-.container button { margin-top: 6px; }
+/* register-specific tweaks */
+.auth-main .container { max-width: 480px; }

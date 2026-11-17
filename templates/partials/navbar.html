@@ -1,0 +1,48 @@
+{% load static %}
+<header class="fv-nav" id="fvNav">
+    <a class="brand" href="{% if user.is_authenticated %}{% url 'home:home' %}{% else %}{% url 'landing' %}{% endif %}">
+        <span class="brand__mark"><svg viewBox="0 0 32 32"><use href="#i-leaf"/></svg></span><span>Face Value</span>
+    </a>
+
+    {% if user.is_authenticated %}
+    <nav class="fv-nav__links" aria-label="Main">
+        <a href="{% url 'home:home' %}" class="{% if request.resolver_match.app_name == 'home' %}active{% endif %}">Dashboard</a>
+        <a href="{% url 'product_library:list' %}" class="{% if request.resolver_match.app_name == 'product_library' %}active{% endif %}">Products</a>
+        <a href="{% url 'routine_builder:list' %}" class="{% if request.resolver_match.app_name == 'routine_builder' %}active{% endif %}">Routines</a>
+    </nav>
+
+    <div class="fv-nav__right">
+        <a class="bell" href="{% url 'home:home' %}#alerts" aria-label="{{ nav_unread_count|default:0 }} unread notifications">
+            <svg viewBox="0 0 24 24"><use href="#ic-bell"/></svg>
+            {% if nav_unread_count %}<span class="bell__count">{{ nav_unread_count }}</span>{% endif %}
+        </a>
+        <div class="avatar-wrap">
+            <button type="button" class="avatar-btn" id="avatarBtn" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+                {{ user.first_name|default:user.username|slice:":1"|upper }}
+            </button>
+            <div class="menu" id="avatarMenu" role="menu">
+                <div class="menu__who"><strong>{{ user.get_full_name|default:user.username }}</strong>{{ user.email }}</div>
+                <a href="{% url 'home:home' %}" class="menu__nav" role="menuitem">Dashboard</a>
+                <a href="{% url 'product_library:list' %}" class="menu__nav" role="menuitem">Products</a>
+                <a href="{% url 'routine_builder:list' %}" class="menu__nav" role="menuitem">Routines</a>
+                <a href="{% url 'user_profile:profile' %}" role="menuitem">My profile</a>
+                <a href="{% url 'user_settings:settings' %}" role="menuitem">Settings</a>
+                {% if user.is_staff %}<a href="{% url 'admin:index' %}" role="menuitem">Admin panel</a>{% endif %}
+                <form method="post" action="{% url 'login:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" role="menuitem">Log out</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <nav class="fv-nav__links" aria-label="Main">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+    </nav>
+    <div class="fv-nav__right">
+        <a class="btn btn-ghost btn-sm" href="{% url 'login:login' %}">Log in</a>
+        <a class="btn btn-lime btn-sm" href="{% url 'register:register' %}">Get started</a>
+    </div>
+    {% endif %}
+</header>

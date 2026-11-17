@@ -1,0 +1,49 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} · Face Value</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path fill='%2376A032' d='M27 3C13 3 4 10.5 4 20.5c0 3.2 1.1 5.7 3.2 7.3.4-6.3 4.2-11.7 11.6-14.8-5.3 4.4-8.4 8.8-9.5 14.7 1.4.7 3 1 4.7 1C25 28.7 29.6 18 27 3z'/></svg>">
+    <script src="{% static 'js/theme.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login/login.css' %}">
+    {% block css %}{% endblock %}
+</head>
+<body class="auth">
+    {% include "partials/art.html" %}
+    <main class="auth-split">
+        <aside class="auth-art {% block art_class %}auth-art--sky{% endblock %}" aria-hidden="true">
+            <a class="brand" href="{% url 'landing' %}"><span class="brand__mark"><svg viewBox="0 0 32 32"><use href="#i-leaf"/></svg></span>Face Value</a>
+
+            <svg class="deco cloud cloud--a bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+            <svg class="deco cloud cloud--b bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+            <svg class="deco sparkle" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+
+            <div class="auth-art__copy">
+                {% block art_copy %}<span class="eyebrow">welcome back</span><h2>Little habits, <span class="script">glowing</span> skin.</h2>{% endblock %}
+            </div>
+
+            <div class="auth-art__stage">
+                <div class="auth-arch">
+                    <div class="auth-bottles">
+                        <svg class="art tone-pink" viewBox="0 0 120 160"><use href="#a-jar"/></svg>
+                        <svg class="art tone-lime big" viewBox="0 0 120 160"><use href="#a-pump"/></svg>
+                        <svg class="art tone-sun" viewBox="0 0 120 160"><use href="#a-dropper"/></svg>
+                    </div>
+                </div>
+                <div class="auth-chip"><svg viewBox="0 0 24 24"><use href="#i-sparkle"/></svg> SPF is the last step of your morning routine</div>
+            </div>
+        </aside>
+
+        <section class="auth-main">
+            <a class="brand brand--mobile" href="{% url 'landing' %}"><span class="brand__mark"><svg viewBox="0 0 32 32"><use href="#i-leaf"/></svg></span>Face Value</a>
+            {% block card %}{% endblock %}
+            <p class="text-center"><a class="back-home" href="{% url 'landing' %}">← Back to home</a></p>
+        </section>
+    </main>
+
+    <script src="{% static 'js/base/base.js' %}"></script>
+    {% block js %}{% endblock %}
+</body>
+</html>
