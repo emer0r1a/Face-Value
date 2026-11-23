@@ -1,3 +1,10 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import UserSettings
+
+
+@admin.register(UserSettings)
+class UserSettingsAdmin(admin.ModelAdmin):
+    list_display = ("user", "dark_mode", "email_notifications")
+    list_filter = ("dark_mode", "email_notifications")
+    search_fields = ("user__username",)

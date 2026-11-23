@@ -21,6 +21,10 @@ from django.conf.urls.static import static
 
 from .views import landing_view
 
+admin.site.site_header = "Face Value admin"
+admin.site.site_title = "Face Value"
+admin.site.index_title = "Catalog, ingredients and reports"
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", include("apps.login.urls")),
@@ -32,6 +36,7 @@ urlpatterns = [
     path("routines/", include("apps.routine_builder.urls")),
     path("ingredients/", include("apps.ingredient_checker.urls")),
     path("tracker/", include("apps.routine_tracker.urls")),
+    path("notifications/", include("apps.notifications.urls")),
 
     path("", landing_view, name="landing"),
 ]

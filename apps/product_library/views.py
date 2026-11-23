@@ -9,6 +9,7 @@ from io import BytesIO
 
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -441,4 +442,7 @@ def report_product_view(request, pk):
         action="reported", notes=f"Flagged: {reason}.",
     )
     messages.success(request, "Thanks! Your report was sent to the Face Value team.")
+    back = request.POST.get("next", "")
+    if back and url_has_allowed_host_and_scheme(back, {request.get_host()}):
+        return redirect(back)
     return redirect("product_library:detail", pk=product.pk)
