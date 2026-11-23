@@ -258,3 +258,5 @@ input[type="time"]:focus { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(
     .stepitem__thumb { display: none; }
     .timerow { flex-wrap: wrap; }
 }
+
+.rcard__warn--tip { background: var(--sun-soft); color: #7a5a00; margin-top: 6px; }

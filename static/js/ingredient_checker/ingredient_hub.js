@@ -358,6 +358,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var mp = mine[id] || [], ml = $('#dProducts'); ml.textContent = ''; $('#dProductsSec').hidden = !mp.length;
         mp.forEach(function (p) { var li = el('li'), a = el('a', '', p.name); a.href = p.url; a.title = p.brand + ' · ' + p.name; li.appendChild(a); ml.appendChild(li); });
 
+        var all = $('#dFindAll'); all.hidden = !mp.length;
+        all.href = (root.dataset.libraryUrl || '/products/') + '?ingredient=' + encodeURIComponent(ing.name);
+
         $('#dCheck').textContent = find('i', id) !== -1 ? 'Already in my stack' : 'Check with my stack';
         if (dlg.showModal) dlg.showModal();
     }

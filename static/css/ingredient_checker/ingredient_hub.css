@@ -198,3 +198,6 @@
     .ggrid { grid-template-columns: 1fr; }
     .ih-tabs .pill { flex: 1; justify-content: center; padding-inline: 14px; }
 }
+
+.inprods__all { display: inline-block; margin-top: 10px; font: 700 13px var(--font-body); color: var(--sage-deep); text-decoration: none; }
+.inprods__all:hover { text-decoration: underline; }

@@ -109,6 +109,32 @@
     </article>
 </section>
 
+<!-- ================= VIBE METER ================= -->
+<section class="card vibe reveal" id="vibe">
+    <header class="card__head"><h2>Skin health <span class="script">vibe</span></h2><span class="chip chip--sun">{{ vibe.emoji }} {{ vibe.level }}</span></header>
+    <div class="vibe__layout">
+        <div class="vibe__meter" data-value="{{ vibe.score }}">
+            <div class="ring-wrap ring-wrap--xl" role="img" aria-label="Vibe score {{ vibe.score }} out of 100"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5"/><circle class="ring__fg" cx="18" cy="18" r="15.5"/></svg><b>{{ vibe.score }}</b></div>
+            <strong>{{ vibe.level }}</strong><span>out of 100</span>
+        </div>
+        <div class="vibe__cards">
+            {% for v in vibe.cards %}
+            <div class="vibe__item vibe--{{ v.tone }}" {% if v.value != None %}data-value="{{ v.value }}"{% endif %}>
+                <div class="ring-wrap"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5"/><circle class="ring__fg" cx="18" cy="18" r="15.5"/></svg><b>{% if v.value == None %}–{% else %}{{ v.value }}{% endif %}</b></div>
+                <strong>{{ v.emoji }} {{ v.label }}</strong><span>{{ v.hint }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% if vibe.tips %}
+    <div class="vibe__tips">
+        <h3>What would help most</h3>
+        <ul>{% for t in vibe.tips %}<li><a href="{{ t.url }}">{{ t.text }} <span aria-hidden="true">→</span></a></li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+    <p class="note">Based on the products and routines you've saved. A friendly guide, not a medical assessment.</p>
+</section>
+
 <!-- ================= TRACKER + SIDE ================= -->
 <div class="dgrid">
     <section class="card tracker reveal" id="tracker">
@@ -192,20 +218,6 @@
             </div>
             <p class="note">Saved on this device only. General wellness tips, not medical advice.</p>
         </section>
-
-        <!-- Vibe -->
-        <section class="card vibe reveal">
-            <header class="card__head"><h2>Skin health <span class="script">vibe</span></h2></header>
-            <div class="vibe__cards">
-                {% for v in vibe %}
-                <div class="vibe__item vibe--{{ v.key }}" data-value="{{ v.value }}">
-                    <div class="ring-wrap"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5"/><circle class="ring__fg" cx="18" cy="18" r="15.5"/></svg><b>{{ v.value }}</b></div>
-                    <strong>{{ v.label }}</strong><span>{{ v.hint }}</span>
-                </div>
-                {% endfor %}
-            </div>
-            <p class="note">Based on the products and routines you've saved. A friendly guide, not a medical assessment.</p>
-        </section>
     </div>
 </div>
 
@@ -271,7 +283,10 @@
         {% for n in reminders %}
         <div class="alert alert--info alert--dismiss"><div><strong>{{ n.title }}</strong><p>{{ n.message }}</p></div><form method="post" action="{% url 'notifications:dismiss' n.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'home:home' %}#alerts"><button type="submit" class="alert__x" aria-label="Dismiss">×</button></form></div>
         {% endfor %}
-        {% if not alerts and not reminders %}<p class="muted-line">🍃 All calm. No ingredient cautions or reminders right now.</p>{% endif %}
+        {% for c in care %}
+        <a class="alert alert--care alert--{{ c.level }}" href="{{ c.url }}"><strong>{{ c.icon }} {{ c.title }}</strong><p>{{ c.text }}</p></a>
+        {% endfor %}
+        {% if not alerts and not reminders and not care %}<p class="muted-line">🍃 All calm. No ingredient cautions or reminders right now.</p>{% endif %}
         {% if alerts %}<p class="muted-line alerts__more"><a class="more" href="{% url 'ingredient_checker:hub' %}">Check these ingredients →</a></p>{% endif %}
     </section>
 

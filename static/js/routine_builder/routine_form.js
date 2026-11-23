@@ -233,16 +233,21 @@ document.addEventListener('DOMContentLoaded', function () {
     function checkClashes() {
         clearTimeout(clashTimer);
         var ids = state.steps.map(function (s) { return s.pid; });
-        if (ids.length < 2) { clashToken++; clashBox.textContent = ''; return; }
+        if (!ids.length) { clashToken++; clashBox.textContent = ''; return; }
         var token = ++clashToken;
         clashTimer = setTimeout(function () {
-            fetch(clashUrl + '?ids=' + ids.join(','), { credentials: 'same-origin' })
+            fetch(clashUrl + '?ids=' + ids.join(',') + '&type=' + encodeURIComponent(typeValue()), { credentials: 'same-origin' })
                 .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
                 .then(function (d) {
                     if (token !== clashToken) return;
                     clashBox.textContent = '';
                     var missing = d.checked - d.with_ingredients;
-                    if (d.clashes.length) {
+                    (d.checks || []).forEach(function (c) {
+                        clashBox.appendChild(badge(c.severity === 'warn' ? 'moderate' : 'info', c.icon, c.title, c.text, c.tip));
+                    });
+                    if (ids.length < 2) {
+                        if (!(d.checks || []).length) clashBox.appendChild(badge('ok', '✅', 'Looking good so far', 'Add another step and we will check how your products layer.'));
+                    } else if (d.clashes.length) {
                         d.clashes.forEach(function (c) {
                             var sev = sevIcon[c.severity] ? c.severity : 'moderate';
                             clashBox.appendChild(badge(sev, sevIcon[sev], c.pair, c.products[0] + ' and ' + c.products[1] + '. ' + c.message, c.tip));
@@ -271,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
         r.addEventListener('change', function () {
             if (!timeTouched) timeIn.value = DEFAULT_TIME[typeValue()] || timeIn.value;
             renderPreview();
+            checkClashes();
         });
     });
     $$('input[name="days"]').forEach(function (d) { d.addEventListener('change', renderPreview); });

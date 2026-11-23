@@ -68,3 +68,30 @@ document.addEventListener('DOMContentLoaded', function () {
         var btn = document.getElementById('submitBtn'); btn.disabled = true; btn.firstChild.textContent = 'Saving… ';
     });
 });
+
+/* ---------- suggest "use within" from the category ---------- */
+(function () {
+    var cat = document.getElementById('category');
+    var pao = document.getElementById('pao_months');
+    var note = document.getElementById('paoSuggest');
+    if (!cat || !pao || !note) return;
+    var defaults = {};
+    try { defaults = JSON.parse(pao.dataset.defaults || '{}'); } catch (e) { /* ignore */ }
+    function suggest() {
+        var m = defaults[(cat.value || '').toLowerCase()];
+        note.textContent = '';
+        if (!m || pao.value) return;
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'link-btn'; b.textContent = 'Use ' + m + ' months';
+        b.addEventListener('click', function () {
+            for (var i = 0; i < pao.options.length; i++) { if (+pao.options[i].value === m) { pao.selectedIndex = i; break; } }
+            note.textContent = '';
+        });
+        note.appendChild(document.createTextNode('Typical for this type: '));
+        note.appendChild(b);
+    }
+    cat.addEventListener('change', suggest);
+    pao.addEventListener('change', suggest);
+    suggest();
+})();
+

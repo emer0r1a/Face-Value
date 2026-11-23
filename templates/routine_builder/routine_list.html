@@ -113,6 +113,7 @@
                     </div>
 
                     {% if r.clash_count %}<p class="rcard__warn">⚠️ {{ r.clash_count }} ingredient heads-up{{ r.clash_count|pluralize }}</p>{% endif %}
+                    {% for c in r.checks %}<p class="rcard__warn rcard__warn--tip">{{ c.icon }} {{ c.title }}</p>{% endfor %}
                 </div>
 
                 <div class="rcard__foot">

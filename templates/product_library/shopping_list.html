@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Shopping list{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">{% endblock %}
+
+{% block content %}
+<main class="library-container shop">
+    <div class="top-bar"><a href="{% url 'product_library:list' %}" class="back-link"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg> Back to library</a></div>
+
+    <header class="shop-hero">
+        <svg class="deco sparkle sparkle--l" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div>
+            <span class="eyebrow">running low</span>
+            <h1>Shopping <span class="script">list</span></h1>
+            <p>Products that have run out, expired, or are about to. It fills itself from what's on your shelf.</p>
+        </div>
+        <div class="shop-hero__side">
+            <strong>{{ total }}</strong><span>to sort out</span>
+            {% if total %}<button type="button" class="btn btn-ghost btn-sm" id="copyList">Copy list</button>{% endif %}
+        </div>
+    </header>
+
+    {% if not replace and not soon and not archived and not gaps %}
+    <section class="rb-empty">
+        <svg class="rb-empty__art tone-lime" viewBox="0 0 120 160"><use href="#a-bottle"/></svg>
+        <h3>Nothing to restock</h3>
+        <p>Everything on your shelf looks fresh. Mark products as “used up” or add open dates and they'll show up here when it's time.</p>
+        <a class="btn btn-primary" href="{% url 'product_library:list' %}">Go to my shelf</a>
+    </section>
+    {% endif %}
+
+    {% if replace %}
+    <section class="card shop-card" data-list="Replace now">
+        <header class="card__head"><h2>Replace <span class="script">now</span></h2><span class="chip chip--warn">{{ replace|length }}</span></header>
+        <ul class="shop-items">
+            {% for p in replace %}
+            <li class="shop-item" data-line="{{ p.product_name }} ({{ p.brand }}) - {{ p.reason }}">
+                <a class="shop-item__art tone-pink" href="{% url 'product_library:detail' p.pk %}">{% if p.image %}<img src="{{ p.image.url }}" alt="">{% else %}<svg viewBox="0 0 120 160"><use href="#a-{{ p.art }}"/></svg>{% endif %}</a>
+                <div class="shop-item__body"><a href="{% url 'product_library:detail' p.pk %}"><strong>{{ p.product_name }}</strong></a><span>{{ p.brand }} · {{ p.category }}</span></div>
+                <span class="chip chip--warn">{{ p.reason }}</span>
+                <form method="post" action="{% url 'product_library:restock' p.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'product_library:shopping' %}"><button type="submit" class="btn btn-primary btn-sm">Bought a new one</button></form>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    {% if soon %}
+    <section class="card shop-card" data-list="Running out soon">
+        <header class="card__head"><h2>Running out <span class="script">soon</span></h2><span class="chip chip--sun">{{ soon|length }}</span></header>
+        <ul class="shop-items">
+            {% for p in soon %}
+            <li class="shop-item" data-line="{{ p.product_name }} ({{ p.brand }}) - {{ p.reason }}">
+                <a class="shop-item__art tone-sun" href="{% url 'product_library:detail' p.pk %}">{% if p.image %}<img src="{{ p.image.url }}" alt="">{% else %}<svg viewBox="0 0 120 160"><use href="#a-{{ p.art }}"/></svg>{% endif %}</a>
+                <div class="shop-item__body"><a href="{% url 'product_library:detail' p.pk %}"><strong>{{ p.product_name }}</strong></a><span>{{ p.brand }} · {{ p.category }}</span></div>
+                <span class="chip chip--sun">{{ p.reason }}</span>
+                <form method="post" action="{% url 'product_library:finish' p.pk %}">{% csrf_token %}<button type="submit" class="btn btn-ghost btn-sm">Used up</button></form>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    {% if gaps %}
+    <section class="card shop-card" data-list="Missing basics">
+        <header class="card__head"><h2>Missing <span class="script">basics</span></h2></header>
+        <p class="muted-line">Nothing active on your shelf covers these everyday steps.</p>
+        <ul class="gaps">
+            {% for g in gaps %}<li data-line="{{ g }} (none on your shelf)"><a class="btn btn-ghost btn-sm" href="{% url 'product_library:add' %}?category={{ g|urlencode }}"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add a {{ g|lower }}</a></li>{% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    {% if archived %}
+    <section class="card shop-card shop-card--quiet">
+        <header class="card__head"><h2>Archived <span class="script">favourites?</span></h2><span class="chip">{{ archived|length }}</span></header>
+        <p class="muted-line">Put away on purpose. Bring one back if you miss it.</p>
+        <ul class="shop-items">
+            {% for p in archived %}
+            <li class="shop-item">
+                <a class="shop-item__art tone-lav" href="{% url 'product_library:detail' p.pk %}">{% if p.image %}<img src="{{ p.image.url }}" alt="">{% else %}<svg viewBox="0 0 120 160"><use href="#a-{{ p.art }}"/></svg>{% endif %}</a>
+                <div class="shop-item__body"><a href="{% url 'product_library:detail' p.pk %}"><strong>{{ p.product_name }}</strong></a><span>{{ p.brand }} · {{ p.category }}</span></div>
+                <form method="post" action="{% url 'product_library:status' p.pk %}">{% csrf_token %}<button type="submit" class="btn btn-ghost btn-sm">Restore</button></form>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/product_library/shopping.js' %}"></script>{% endblock %}

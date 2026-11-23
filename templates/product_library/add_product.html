@@ -55,6 +55,23 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group form-group--fresh">
+                <label>Freshness <span class="optional">(optional)</span></label>
+                <div class="fresh-row">
+                    <div>
+                        <label for="opened_on" class="sublabel">Opened on</label>
+                        <input type="date" id="opened_on" name="opened_on" value="{{ values.opened_on }}" max="{{ today|date:'Y-m-d' }}">
+                    </div>
+                    <div>
+                        <label for="pao_months" class="sublabel">Use within</label>
+                        <select id="pao_months" name="pao_months" data-defaults='{{ pao_defaults_json }}'>
+                            <option value="">Not set</option>
+                            {% for m in pao_choices %}<option value="{{ m }}" {% if values.pao_months == m|stringformat:"s" %}selected{% endif %}>{{ m }} months</option>{% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <p class="hint">Look for the little open-jar symbol (like “6M”) on the packaging. We'll warn you before it runs out. <span id="paoSuggest"></span></p>
+            </div>
             <div class="form-group">
                 <label for="description">Description <span class="optional">(optional)</span></label>
                 <textarea id="description" name="description" rows="3" placeholder="What is it for? Any notes?">{{ values.description }}</textarea>

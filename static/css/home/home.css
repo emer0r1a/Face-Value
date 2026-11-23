@@ -136,18 +136,34 @@
 .drop.on { background: var(--sky); color: #fff; transform: scale(1.08); box-shadow: 0 6px 14px -4px rgba(47,164,231,.7); }
 .drop.on svg path { fill: rgba(255,255,255,.35); }
 
-/* Vibe rings */
-.vibe__cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.vibe__item { display: grid; justify-items: center; gap: 4px; text-align: center; padding: 16px 8px 14px; border-radius: 26px; background: var(--lime-soft); font-size: 12px; transition: transform .25s; }
+/* Vibe meter */
+.vibe { margin-bottom: 28px; }
+.vibe__layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: center; }
+.vibe__meter { display: grid; justify-items: center; gap: 2px; padding: 22px 12px; border-radius: 34px 34px 34px 10px; background: linear-gradient(150deg, var(--lime-soft), var(--sky-soft)); text-align: center; }
+.vibe__meter strong { font: 400 24px var(--font-display); margin-top: 6px; }
+.vibe__meter span { font-size: 12px; color: var(--muted); font-weight: 600; }
+.vibe__cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.vibe__item { display: grid; justify-items: center; align-content: start; gap: 4px; text-align: center; padding: 16px 8px 14px; border-radius: 26px; background: var(--lime-soft); font-size: 12px; transition: transform .25s; }
 .vibe__item:hover { transform: translateY(-4px); }
-.vibe--hydration { background: var(--sky-soft); } .vibe--shelf { background: var(--sun-soft); }
-.vibe__item strong { font-size: 13px; } .vibe__item span { color: var(--muted); line-height: 1.3; }
+.vibe--sky { background: var(--sky-soft); } .vibe--pink { background: var(--pink-soft); } .vibe--sun { background: var(--sun-soft); } .vibe--lav { background: var(--lav-soft); }
+.vibe__item strong { font-size: 13px; } .vibe__item span { color: var(--ink-2); line-height: 1.3; }
 .ring-wrap { position: relative; width: 70px; height: 70px; margin-bottom: 4px; }
+.ring-wrap--xl { width: 128px; height: 128px; }
+.ring-wrap--xl b { font-size: 40px; }
 .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .ring-wrap circle { fill: none; stroke-width: 4; stroke: rgba(16,54,46,.1); }
 .ring-wrap .ring__fg { stroke: var(--sage); stroke-linecap: round; stroke-dasharray: 97.4; stroke-dashoffset: 97.4; transition: stroke-dashoffset 1.2s ease; }
-.vibe--hydration .ring__fg { stroke: var(--sky-deep); } .vibe--shelf .ring__fg { stroke: #E5A400; }
+.vibe--sky .ring__fg { stroke: var(--sky-deep); } .vibe--pink .ring__fg { stroke: #D6497F; } .vibe--sun .ring__fg { stroke: #E5A400; } .vibe--lav .ring__fg { stroke: #6A5BD6; }
 .ring-wrap b { position: absolute; inset: 0; display: grid; place-items: center; font: 400 20px var(--font-display); }
+.vibe__tips { margin-top: 20px; padding: 16px 20px; border-radius: 26px; background: var(--cream); }
+.vibe__tips h3 { font: 700 13px var(--font-body); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.vibe__tips ul { list-style: none; display: grid; gap: 6px; }
+.vibe__tips a { font-weight: 600; font-size: 14px; color: var(--ink); text-decoration: none; }
+.vibe__tips a:hover { color: var(--sage-deep); text-decoration: underline; }
+
+.alert--care { display: block; color: inherit; text-decoration: none; background: var(--sun-soft); transition: transform .2s; }
+.alert--care:hover { transform: translateY(-2px); }
+.alert--care.alert--expired, .alert--care.alert--warn { background: var(--warn-bg); }
 
 /* ================= Tips carousel ================= */
 .tips { margin: 20px 0 50px; }
@@ -227,6 +243,7 @@
     .slide__arch { width: 120px; height: 190px; }
     .shelf { padding: 22px 18px 18px; border-radius: 40px 40px 40px 70px; }
     .stats { gap: 12px; } .stat { padding: 18px; } .stat strong { font-size: 42px; }
+    .vibe__layout { grid-template-columns: 1fr; }
     .vibe__cards { grid-template-columns: 1fr; }
     .vibe__item { grid-template-columns: auto 1fr; justify-items: start; text-align: left; column-gap: 14px; }
     .vibe__item .ring-wrap { grid-row: span 2; }
@@ -240,3 +257,7 @@
 .alert--dismiss form { flex: none; }
 .alert__x { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.7); color: var(--ink); font: 700 16px/1 var(--font-body); cursor: pointer; }
 .alert__x:hover { background: var(--ink); color: var(--cream); }
+
+@media (max-width: 1180px) and (min-width: 761px) {
+    .vibe__cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

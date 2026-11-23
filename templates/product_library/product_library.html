@@ -13,7 +13,10 @@
             <span class="eyebrow">my collection</span>
             <h1>Your <span class="script">shelf</span></h1>
             <p>Every product you own, with photos and ingredients, all in one place.</p>
-            <a href="{% url 'product_library:add' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add product</a>
+            <div class="lib-hero__btns">
+                <a href="{% url 'product_library:add' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add product</a>
+                <a href="{% url 'product_library:shopping' %}" class="btn btn-ghost"><svg viewBox="0 0 24 24"><use href="#ic-list"/></svg> Shopping list{% if shopping_count %} <b class="btn__count">{{ shopping_count }}</b>{% endif %}</a>
+            </div>
         </div>
         <div class="lib-hero__art" aria-hidden="true">
             <svg class="art tone-pink" viewBox="0 0 120 160"><use href="#a-jar"/></svg>
@@ -26,11 +29,15 @@
         </div>
     </header>
 
-    <div class="toolbar" id="libTools" data-initial-q="{{ query }}" data-initial-cat="{{ selected_category }}">
+    {% if ingredient %}
+    <p class="ing-filter">🌿 Showing products that contain <b>{{ ingredient }}</b> <a href="{% url 'product_library:list' %}" aria-label="Clear ingredient filter">Clear ×</a></p>
+    {% endif %}
+
+    <div class="toolbar" id="libTools" data-initial-q="{{ query }}" data-initial-cat="{{ selected_category }}" data-ingredient="{{ ingredient }}">
         <form method="get" class="filter-form" id="filterForm" role="search">
             <div class="search-box">
                 <svg viewBox="0 0 24 24"><use href="#ic-search"/></svg>
-                <input type="text" name="q" id="searchInput" value="{{ query }}" placeholder="Search name, brand or ingredient…" autocomplete="off">
+                <input type="text" name="q" id="searchInput" value="{{ query }}" placeholder="Search name, brand or ingredient (try niacinamide)…" autocomplete="off">
             </div>
             <select id="sortSelect" aria-label="Sort products">
                 <option value="new">Newest first</option>
@@ -61,7 +68,7 @@
            data-search="{{ product.product_name|lower }} {{ product.brand|lower }} {{ product.category|lower }} {% for it in product.product_ingredients.all %}{{ it.ingredient.ingredient_name|lower }} {% endfor %}">
             <div class="pcard__media">
                 <span class="pcard__cat">{{ product.category }}</span>
-                {% if product.status != 'active' %}<span class="pcard__status">Archived</span>{% endif %}
+                {% if product.status != 'active' %}<span class="pcard__status">{{ product.status|capfirst }}</span>{% elif product.expiry and product.expiry.state != 'ok' %}<span class="pcard__status pcard__status--{{ product.expiry.state }}">⏳ {{ product.expiry.short }}</span>{% endif %}
                 <div class="pcard__arch">
                     {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.product_name }}" loading="lazy">
                     {% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ product.art }}"/></svg>{% endif %}

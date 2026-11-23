@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function setRing(circle, pct) { circle.style.strokeDashoffset = 97.4 * (1 - Math.max(0, Math.min(100, pct)) / 100); }
     $$('.ring--stat .ring__fg').forEach(function (c) { setTimeout(function () { setRing(c, +c.dataset.pct || 0); }, 250); });
-    $$('.vibe__item').forEach(function (item) { setTimeout(function () { setRing($('.ring__fg', item), +item.dataset.value || 0); }, 300); });
+    $$('.vibe__item, .vibe__meter').forEach(function (item) { setTimeout(function () { setRing($('.ring__fg', item), +item.dataset.value || 0); }, 300); });
 
     /* ============ Routine tabs ============ */
     var tabs = $('#routineTabs');

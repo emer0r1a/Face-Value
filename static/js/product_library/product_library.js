@@ -37,6 +37,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var params = new URLSearchParams();
         if (q) params.set('q', input.value.trim());
         if (cat) params.set('category', cat);
+        var ing = tools && tools.dataset.ingredient;
+        if (ing) params.set('ingredient', ing);
         var qs = params.toString();
         history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
     }

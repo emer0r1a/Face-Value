@@ -27,7 +27,8 @@
         <section class="dinfo">
             <div class="detail-tags">
                 <span class="chip">{{ product.category }}</span>
-                {% if product.status != 'active' %}<span class="chip chip--warn">Archived</span>{% endif %}
+                {% if product.status != 'active' %}<span class="chip chip--warn">{{ product.status|capfirst }}</span>{% endif %}
+                {% if expiry and product.status == 'active' and expiry.state != 'ok' %}<span class="chip chip--{% if expiry.state == 'expired' %}warn{% else %}sun{% endif %}">⏳ {{ expiry.short }}</span>{% endif %}
                 {% if pending_reports %}<span class="chip chip--sky">{{ pending_reports }} report{{ pending_reports|pluralize }} pending</span>{% endif %}
             </div>
             <h1>{{ product.product_name }}</h1>
@@ -49,6 +50,21 @@
                     <div><dt>Ingredients</dt><dd>{{ items|length }}</dd></div>
                     <div><dt>Date added</dt><dd>{{ product.date_added|date:"M j, Y" }}</dd></div>
                 </dl>
+                <div class="fresh fresh--{% if expiry %}{{ expiry.state }}{% else %}none{% endif %}">
+                    <div class="fresh__info">
+                        <strong>⏳ Freshness</strong>
+                        {% if expiry %}
+                        <p>{{ expiry.label }}.{% if product.opened_on %} Opened {{ product.opened_on|date:"M j, Y" }}, good for {{ product.pao_months }} months.{% endif %}</p>
+                        {% elif product.opened_on %}
+                        <p>Opened {{ product.opened_on|date:"M j, Y" }}. <a href="{% url 'product_library:edit' product.pk %}">Add its “use within” time</a> to get a reminder.</p>
+                        {% else %}
+                        <p>Not tracked yet. Start the clock when you open it and we'll warn you before it expires.</p>
+                        {% endif %}
+                    </div>
+                    {% if product.status == 'active' and not product.opened_on %}
+                    <form method="post" action="{% url 'product_library:open' product.pk %}">{% csrf_token %}<button type="submit" class="btn btn-primary btn-sm">I just opened it</button></form>
+                    {% endif %}
+                </div>
                 <div class="meters">
                     <div class="meter">
                         <div class="meter__row"><span>Ingredient info complete</span><b>{{ completeness }}%</b></div>
@@ -124,6 +140,15 @@
             <form method="post" action="{% url 'product_library:status' product.pk %}">{% csrf_token %}
                 <button type="submit" class="rail__btn"><span><svg viewBox="0 0 24 24"><use href="#ic-archive"/></svg></span>{% if product.status == 'active' %}Archive{% else %}Restore{% endif %}</button>
             </form>
+            {% if product.status == 'active' %}
+            <form method="post" action="{% url 'product_library:finish' product.pk %}">{% csrf_token %}
+                <button type="submit" class="rail__btn"><span><svg viewBox="0 0 24 24"><use href="#ic-list"/></svg></span>Used up</button>
+            </form>
+            {% elif product.status == 'finished' %}
+            <form method="post" action="{% url 'product_library:restock' product.pk %}">{% csrf_token %}
+                <button type="submit" class="rail__btn"><span><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg></span>Restocked</button>
+            </form>
+            {% endif %}
             <button type="button" class="rail__btn" data-open="reportDialog"><span><svg viewBox="0 0 24 24"><use href="#ic-flag"/></svg></span>Report</button>
             <button type="button" class="rail__btn rail__btn--danger" data-open="deleteDialog"><span><svg viewBox="0 0 24 24"><use href="#ic-trash"/></svg></span>Delete</button>
         </nav>
