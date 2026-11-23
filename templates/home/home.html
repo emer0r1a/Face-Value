@@ -14,8 +14,8 @@
 
     <div class="dhero__copy">
         <span class="eyebrow">{% if hour < 12 %}good morning{% elif hour < 18 %}good afternoon{% else %}good evening{% endif %},</span>
-        <h1>{{ user.first_name|default:user.username }}, <span class="script">let's glow</span></h1>
-        <p>Skincare without the guesswork. Here's your day at a glance.</p>
+        <h1>{{ user.first_name|default:user.username }}, <span class="script">let's glow!</span></h1>
+        <p>Know what works for your skin. Here’s today at a glance.</p>
 
         <div class="dhero__chips">
             <div class="streak" id="streakBadge" title="Best streak: {{ best_streak }} day{{ best_streak|pluralize }}">

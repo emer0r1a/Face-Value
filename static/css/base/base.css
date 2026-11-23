@@ -212,7 +212,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--sky); box-shadow
 .bell svg { width: 20px; height: 20px; }
 .bell__count { position: absolute; top: -4px; right: -4px; min-width: 19px; height: 19px; padding: 0 5px; display: grid; place-items: center; background: var(--coral); color: #fff; border-radius: 999px; font-size: 11px; font-weight: 700; border: 2px solid var(--paper); }
 .avatar-wrap { position: relative; }
-.avatar-btn { display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: var(--sun); color: var(--ink); font: 700 16px var(--font-body); cursor: pointer; box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.500px var(--sun); }
+.avatar-btn { display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: var(--lime); color: var(--ink); font: 700 16px var(--font-body); cursor: pointer; box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--lime); overflow: hidden; }
+.avatar-btn__img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
 .menu { position: absolute; right: 0; top: calc(100% + 14px); min-width: 220px; padding: 8px; background: var(--paper); border-radius: 22px; box-shadow: var(--shadow-md); border: 1.5px solid var(--line); opacity: 0; visibility: hidden; transform: translateY(-6px) scale(.97); transform-origin: top right; transition: opacity .15s, transform .15s, visibility .15s; }
 .menu.open { opacity: 1; visibility: visible; transform: none; }
 .menu__who { padding: 10px 12px 10px; font-size: 13px; color: var(--muted); border-bottom: 1.5px dashed var(--line); margin-bottom: 6px; }
@@ -220,6 +221,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--sky); box-shadow
 .menu a, .menu button { display: block; width: 100%; padding: 10px 12px; background: none; box-shadow: none; border: 0; border-radius: 12px; color: var(--ink); font: 600 14px var(--font-body); text-align: left; text-decoration: none; cursor: pointer; }
 .menu a:hover, .menu button:hover { background: var(--lime-soft); transform: none; box-shadow: none; }
 .menu .menu__nav { display: none; }
+.menu .menu__nav--active { background: var(--lime-soft); color: var(--sage-deep); }
+.menu .menu__sep { border: 0; border-top: 1.5px dashed var(--line); margin: 6px 0; }
 
 @media (max-width: 720px) {
     .menu .menu__nav { display: block; }

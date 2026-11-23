@@ -11,8 +11,6 @@
         <a href="{% url 'routine_builder:list' %}" class="{% if request.resolver_match.app_name == 'routine_builder' %}active{% endif %}">Routines</a>
         <a href="{% url 'routine_tracker:tracker' %}" class="{% if request.resolver_match.app_name == 'routine_tracker' %}active{% endif %}">Tracker</a>
         <a href="{% url 'ingredient_checker:hub' %}" class="{% if request.resolver_match.app_name == 'ingredient_checker' %}active{% endif %}">Ingredients</a>
-        <a href="{% url 'user_profile:profile' %}">Profile</a>
-        <a href="{% url 'user_settings:settings' %}">Settings</a>
     </nav>
 
     <div class="fv-nav__right">
@@ -22,7 +20,11 @@
         </a>
         <div class="avatar-wrap">
             <button type="button" class="avatar-btn" id="avatarBtn" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
-                {{ user.first_name|default:user.username|slice:":1"|upper }}
+                {% if nav_profile_image %}
+                    <img src="{{ nav_profile_image }}" alt="{{ user.first_name|default:user.username }}" class="avatar-btn__img">
+                {% else %}
+                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                {% endif %}
             </button>
             <div class="menu" id="avatarMenu" role="menu">
                 <div class="menu__who"><strong>{{ user.get_full_name|default:user.username }}</strong>{{ user.email }}</div>
@@ -31,7 +33,11 @@
                 <a href="{% url 'routine_builder:list' %}" class="menu__nav" role="menuitem">Routines</a>
                 <a href="{% url 'routine_tracker:tracker' %}" class="menu__nav" role="menuitem">Tracker</a>
                 <a href="{% url 'ingredient_checker:hub' %}" class="menu__nav" role="menuitem">Ingredients</a>
+                <hr class="menu__sep">
+                <a href="{% url 'user_profile:profile' %}" class="{% if request.resolver_match.app_name == 'user_profile' %}menu__nav--active{% endif %}" role="menuitem">Profile</a>
+                <a href="{% url 'user_settings:settings' %}" class="{% if request.resolver_match.app_name == 'user_settings' %}menu__nav--active{% endif %}" role="menuitem">Settings</a>
                 {% if user.is_staff %}<a href="{% url 'admin:index' %}" role="menuitem">Admin panel</a>{% endif %}
+                <hr class="menu__sep">
                 <form method="post" action="{% url 'login:logout' %}">
                     {% csrf_token %}
                     <button type="submit" role="menuitem">Log out</button>
