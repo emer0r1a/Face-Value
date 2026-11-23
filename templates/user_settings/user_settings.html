@@ -1,83 +1,35 @@
+{% extends "base.html" %}
 {% load static %}
+{% block title %}Settings{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/user_settings/user_settings.css' %}">{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Face Value</title>
+{% block content %}
+<main class="st">
+    <header class="st-hero">
+        <svg class="deco sparkle sparkle--r" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <span class="eyebrow">make it yours</span>
+        <h1>Your <span class="script">settings</span></h1>
+        <p>Small switches that change how Face Value looks and what it tells you.</p>
+    </header>
 
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user_settings/user_settings.css' %}">
-</head>
-
-<body>
-
-    <div class="settings-container">
-
-        <div class="top-bar">
-            <a href="{% url 'home:home' %}" class="back-link">
-                ← Back to Home
-            </a>
+    <form method="post" class="card st-card" id="settingsForm">
+        {% csrf_token %}
+        <div class="setting">
+            <span class="setting__icon tone-lav">🌙</span>
+            <div class="setting__info"><label for="dark_mode"><h3>Dark mode</h3></label><p>A softer, night-time look for the whole site. Applies as soon as you flip it.</p></div>
+            <label class="switch"><input type="checkbox" id="dark_mode" name="dark_mode" {% if settings.dark_mode %}checked{% endif %}><span class="switch__track"></span></label>
         </div>
-
-        <div class="brand">Face Value</div>
-        <div class="subtitle">Customize your experience</div>
-
-        <div class="settings-card">
-
-            <h2>Settings</h2>
-
-            <form method="post">
-
-                {% csrf_token %}
-
-                <div class="setting-row">
-
-                    <div class="setting-info">
-                        <h3>Dark Mode</h3>
-                        <p>Use a darker appearance for the website.</p>
-                    </div>
-
-                    <label class="switch">
-                        <input
-                            type="checkbox"
-                            name="dark_mode"
-                            {% if settings.dark_mode %}checked{% endif %}
-                        >
-                        <span class="slider"></span>
-                    </label>
-
-                </div>
-
-                <div class="setting-row">
-
-                    <div class="setting-info">
-                        <h3>Email Notifications</h3>
-                        <p>Receive notifications and updates through email.</p>
-                    </div>
-
-                    <label class="switch">
-                        <input
-                            type="checkbox"
-                            name="email_notifications"
-                            {% if settings.email_notifications %}checked{% endif %}
-                        >
-                        <span class="slider"></span>
-                    </label>
-
-                </div>
-
-                <button type="submit">
-                    Save Settings
-                </button>
-
-            </form>
-
+        <div class="setting">
+            <span class="setting__icon tone-sky">✉️</span>
+            <div class="setting__info"><label for="email_notifications"><h3>Email notifications</h3></label><p>Get routine reminders and ingredient cautions by email.</p></div>
+            <label class="switch"><input type="checkbox" id="email_notifications" name="email_notifications" {% if settings.email_notifications %}checked{% endif %}><span class="switch__track"></span></label>
         </div>
+        <div class="form-actions">
+            <a class="btn btn-ghost" href="{% url 'user_profile:profile' %}">Back to profile</a>
+            <button type="submit" class="btn btn-primary">Save settings</button>
+        </div>
+    </form>
+</main>
+{% endblock %}
 
-    </div>
-
-    <script src="{% static 'js/base/base.js' %}"></script>
-</body>
-</html>
+{% block js %}<script src="{% static 'js/user_settings/user_settings.js' %}"></script>{% endblock %}

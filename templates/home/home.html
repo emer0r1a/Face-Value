@@ -269,7 +269,7 @@
         <div class="alert alert--{{ a.severity|lower }}"><strong>{{ a.interaction.ingredient_1 }} + {{ a.interaction.ingredient_2 }}</strong><p>{{ a.alert_message }}</p></div>
         {% endfor %}
         {% for n in reminders %}
-        <div class="alert alert--info"><strong>{{ n.title }}</strong><p>{{ n.message }}</p></div>
+        <div class="alert alert--info alert--dismiss"><div><strong>{{ n.title }}</strong><p>{{ n.message }}</p></div><form method="post" action="{% url 'notifications:dismiss' n.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'home:home' %}#alerts"><button type="submit" class="alert__x" aria-label="Dismiss">×</button></form></div>
         {% endfor %}
         {% if not alerts and not reminders %}<p class="muted-line">🍃 All calm. No ingredient cautions or reminders right now.</p>{% endif %}
         {% if alerts %}<p class="muted-line alerts__more"><a class="more" href="{% url 'ingredient_checker:hub' %}">Check these ingredients →</a></p>{% endif %}

@@ -1,98 +1,148 @@
+{% extends "base.html" %}
 {% load static %}
+{% block title %}Profile{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/user_profile/user_profile.css' %}">{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Face Value</title>
+{% block content %}
+<main class="pf" id="pf">
 
-    <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user_profile/user_profile.css' %}">
-</head>
-
-<body>
-
-    <div class="profile-container">
-
-        <div class="top-bar">
-            <a href="{% url 'home:home' %}" class="back-link">
-                ← Back to Home
-            </a>
-        </div>
-
-        <div class="brand">Face Value</div>
-        <div class="subtitle">Your skincare profile</div>
-
-        <div class="profile-card">
-
-            <div class="profile-image-container">
-
-                {% if profile.profile_image %}
-                    <img
-                        src="{{ profile.profile_image.url }}"
-                        alt="Profile picture"
-                        class="profile-image"
-                    >
-                {% else %}
-                    <div class="profile-placeholder">
-                        {{ user.first_name|first|upper }}
-                    </div>
-                {% endif %}
-
+    <!-- ================= HERO ================= -->
+    <header class="pf-hero">
+        <svg class="deco cloud cloud--r bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+        <svg class="deco sparkle sparkle--r" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div class="pf-hero__who">
+            <div class="ava" id="avaHero">
+                {% if profile.profile_image %}<img src="{{ profile.profile_image.url }}" alt="Your profile photo">
+                {% else %}<span>{{ profile.full_name|default:user.username|slice:":1"|upper }}</span>{% endif %}
             </div>
+            <div>
+                <span class="eyebrow">your profile</span>
+                <h1>{{ profile.full_name|default:user.username }}</h1>
+                <p class="pf-hero__meta">@{{ user.username }} · {{ user.email|default:"no email yet" }} · growing since {{ user.date_joined|date:"F Y" }}</p>
+                {% if profile.bio %}<p class="pf-hero__bio">{{ profile.bio }}</p>{% endif %}
+            </div>
+        </div>
+        <ul class="pf-stats">
+            <li class="tone-lime"><b>{{ stats.products }}</b><span>products</span></li>
+            <li class="tone-sky"><b>{{ stats.routines }}</b><span>routines</span></li>
+            <li class="tone-sun"><b>{{ stats.checkins }}</b><span>check-ins</span></li>
+            <li class="tone-pink"><b>{{ stats.streak }}</b><span>day streak</span></li>
+        </ul>
+    </header>
 
-            <h2>{{ user.username }}</h2>
-
-            <p class="email">
-                {{ user.email }}
-            </p>
-
-            <form method="post" enctype="multipart/form-data">
-
+    <div class="pf-grid">
+        <!-- ================= EDIT PROFILE ================= -->
+        <section class="card pf-edit">
+            <header class="card__head"><h2>About <span class="script">you</span></h2></header>
+            <form method="post" enctype="multipart/form-data" id="profileForm" novalidate>
                 {% csrf_token %}
-
-                <div class="form-group">
-                    <label for="full_name">Full Name</label>
-                    <input
-                        type="text"
-                        id="full_name"
-                        name="full_name"
-                        value="{{ profile.full_name }}"
-                        placeholder="Enter your full name"
-                    >
+                <div class="photo-row">
+                    <div class="ava ava--sm" id="avaPreview">
+                        {% if profile.profile_image %}<img src="{{ profile.profile_image.url }}" alt="">{% else %}<span>{{ profile.full_name|default:user.username|slice:":1"|upper }}</span>{% endif %}
+                    </div>
+                    <div class="photo-row__body">
+                        <input type="file" id="profile_image" name="profile_image" accept="image/*" class="sr-only">
+                        <label for="profile_image" class="btn btn-ghost btn-sm"><svg viewBox="0 0 24 24"><use href="#ic-camera"/></svg> {% if profile.profile_image %}Change photo{% else %}Add a photo{% endif %}</label>
+                        {% if profile.profile_image %}
+                        <label class="check-line"><input type="checkbox" name="remove_photo" value="1" id="removePhoto"> Remove current photo</label>
+                        {% endif %}
+                        <p class="hint" id="photoHint">JPG, PNG, WebP or GIF, up to 5 MB. Cropped to a square.</p>
+                        {% if errors.profile_image %}<p class="field-error">{{ errors.profile_image }}</p>{% endif %}
+                    </div>
                 </div>
 
+                <div class="form-group">
+                    <label for="full_name">Name</label>
+                    <input type="text" id="full_name" name="full_name" value="{{ profile.full_name }}" maxlength="{{ name_max }}" placeholder="What should we call you?">
+                    {% if errors.full_name %}<p class="field-error">{{ errors.full_name }}</p>{% endif %}
+                </div>
                 <div class="form-group">
                     <label for="bio">Bio</label>
-                    <textarea
-                        id="bio"
-                        name="bio"
-                        rows="4"
-                        placeholder="Tell us a little about yourself..."
-                    >{{ profile.bio }}</textarea>
+                    <textarea id="bio" name="bio" rows="4" maxlength="{{ bio_max }}" placeholder="Skin type, goals, favourite step…">{{ profile.bio }}</textarea>
+                    <p class="hint hint--r"><span id="bioCount">{{ profile.bio|length }}</span> / {{ bio_max }}</p>
+                    {% if errors.bio %}<p class="field-error">{{ errors.bio }}</p>{% endif %}
                 </div>
-
-                <div class="form-group">
-                    <label for="profile_image">Profile Picture</label>
-                    <input
-                        type="file"
-                        id="profile_image"
-                        name="profile_image"
-                        accept="image/*"
-                    >
-                </div>
-
-                <button type="submit">
-                    Save Changes
-                </button>
-
+                <div class="form-actions"><button type="submit" class="btn btn-primary">Save changes</button></div>
             </form>
+        </section>
 
+        <div class="pf-side">
+            <!-- ================= ACCOUNT ================= -->
+            <section class="card">
+                <header class="card__head"><h2>Your <span class="script">account</span></h2></header>
+                <ul class="rows">
+                    <li><span>Username</span><b>{{ user.username }}</b></li>
+                    <li><span>Email</span><b>{{ user.email|default:"Not set" }}</b></li>
+                    <li><span>Best streak</span><b>{{ stats.best }} day{{ stats.best|pluralize }}</b></li>
+                </ul>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-ghost btn-sm" data-open="passwordDialog"><svg viewBox="0 0 24 24"><use href="#ic-shield"/></svg> Change password</button>
+                    <a class="btn btn-ghost btn-sm" href="{% url 'user_settings:settings' %}">Settings</a>
+                </div>
+            </section>
+
+            {% if user.is_staff %}
+            <!-- ================= STAFF ================= -->
+            <section class="card pf-admin tone-lav">
+                <header class="card__head"><h2>Admin <span class="script">panel</span></h2>{% if pending_reports %}<span class="chip chip--pink">{{ pending_reports }} to review</span>{% endif %}</header>
+                <p class="muted-line">You can manage products, ingredients, interactions and user reports.</p>
+                <div class="btn-row">
+                    <a class="btn btn-primary btn-sm" href="{% url 'admin:index' %}">Open admin</a>
+                    <a class="btn btn-ghost btn-sm" href="{% url 'admin:product_library_productreport_changelist' %}?status__exact=pending">Pending reports</a>
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- ================= REPORTS ================= -->
+            <section class="card" id="reports">
+                <header class="card__head"><h2>Info <span class="script">reports</span></h2></header>
+                <p class="muted-line">Spotted outdated or wrong details on one of your products? Flag it and an admin will take a look.</p>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-primary btn-sm" data-open="reportDialog" {% if not report_products %}disabled{% endif %}><svg viewBox="0 0 24 24"><use href="#ic-flag"/></svg> Report something</button>
+                    {% if not report_products %}<a class="more" href="{% url 'product_library:add' %}">Add a product first →</a>{% endif %}
+                </div>
+                {% if reports %}
+                <ul class="reps">
+                    {% for r in reports %}
+                    <li>
+                        <div><strong>{{ r.product.product_name }}</strong><span>{{ r.reason }} · {{ r.reported_at|date:"M j" }}</span></div>
+                        <em class="chip {% if r.status == 'resolved' %}{% elif r.status == 'pending' %}chip--sun{% else %}chip--lav{% endif %}">{{ r.status }}</em>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </section>
         </div>
-
     </div>
+</main>
 
-    <script src="{% static 'js/base/base.js' %}"></script>
-</body>
-</html>
+<!-- ================= REPORT MODAL ================= -->
+<dialog id="reportDialog" class="dlg">
+    <form method="post" id="reportForm" action="" data-url="{% url 'product_library:report' 0 %}">{% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'user_profile:profile' %}#reports">
+        <h3>Report outdated or <span class="script">wrong</span> info</h3>
+        <p class="muted-line">Tell us what's off and an admin will check it.</p>
+        <div class="form-group"><label for="rpProduct">Which product?</label>
+            <select id="rpProduct" required><option value="" disabled selected>Choose a product…</option>{% for p in report_products %}<option value="{{ p.id }}">{{ p.product_name }}{% if p.brand %} · {{ p.brand }}{% endif %}</option>{% endfor %}</select></div>
+        <div class="form-group"><label for="rpReason">What's wrong?</label>
+            <select id="rpReason" name="reason" required><option value="" disabled selected>Choose a reason…</option>{% for r in report_reasons %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select></div>
+        <div class="form-group"><label for="rpDesc">Tell us more</label>
+            <textarea id="rpDesc" name="description" rows="4" maxlength="2000" required placeholder="e.g. The new bottle lists a different ingredient order."></textarea></div>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button type="submit" class="btn btn-primary">Send report</button></div>
+    </form>
+</dialog>
+
+<!-- ================= PASSWORD MODAL ================= -->
+<dialog id="passwordDialog" class="dlg" {% if open_dialog %}data-autoopen{% endif %}>
+    <form method="post" action="{% url 'user_profile:password' %}">{% csrf_token %}
+        <h3>Change <span class="script">password</span></h3>
+        {% if password_form.errors %}<div class="error">{% for field in password_form %}{% for e in field.errors %}<div>{{ e }}</div>{% endfor %}{% endfor %}{% for e in password_form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>{% endif %}
+        <div class="form-group"><label for="id_old_password">Current password</label><input type="password" id="id_old_password" name="old_password" autocomplete="current-password" required></div>
+        <div class="form-group"><label for="id_new_password1">New password</label><input type="password" id="id_new_password1" name="new_password1" autocomplete="new-password" required></div>
+        <div class="form-group"><label for="id_new_password2">Confirm new password</label><input type="password" id="id_new_password2" name="new_password2" autocomplete="new-password" required></div>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" data-close>Cancel</button><button type="submit" class="btn btn-primary">Update</button></div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/user_profile/user_profile.js' %}"></script>{% endblock %}

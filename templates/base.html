@@ -1,5 +1,5 @@
 {% load static %}<!DOCTYPE html>
-<html lang="en">
+<html lang="en"{% if user.is_authenticated %} data-user-theme data-theme="{% if fv_dark_mode %}dark{% else %}light{% endif %}"{% endif %}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
