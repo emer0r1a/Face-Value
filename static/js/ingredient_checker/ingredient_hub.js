@@ -114,17 +114,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 grid.appendChild(none);
             }
         } else if (source === 'ingredients') {
+            var totalShown = 0, dimShown = 0;
             data.ingredients.forEach(function (ing) {
-                if (!ing.classified) return;
                 if (q && (ing.name + ' ' + ing.function).toLowerCase().indexOf(q) === -1) return;
+                totalShown++;
+                if (!ing.classified) dimShown++;
                 shown++;
                 var on = find('i', ing.id) !== -1;
-                var c = el('span', 'ichip tone-' + toneOf(ing) + (on ? ' is-on' : ''), ing.name);
-                c.setAttribute('role', 'button'); c.tabIndex = 0; c.setAttribute('aria-pressed', on ? 'true' : 'false'); c.title = ing.function;
+                var cls = 'ichip tone-' + toneOf(ing) + (on ? ' is-on' : '') + (ing.classified ? '' : ' ichip--dim');
+                var c = el('span', cls, ing.name);
+                c.setAttribute('role', 'button'); c.tabIndex = 0;
+                c.setAttribute('aria-pressed', on ? 'true' : 'false');
+                c.title = ing.classified ? ing.function : 'Not yet fully classified — can still be checked for clashes';
                 onActivate(c, function () { toggle('i', ing.id, c); });
                 grid.appendChild(c);
             });
-            if (!shown) grid.appendChild(el('p', 'pickgrid__none', 'No ingredients match that search.'));
+            if (!shown) {
+                grid.appendChild(el('p', 'pickgrid__none', 'No ingredients match that search.'));
+            } else if (dimShown) {
+                var hint = el('p', 'pickgrid__hint', '\u2022 Faded chips are ingredients not yet fully classified — they can still be added to your stack.');
+                grid.appendChild(hint);
+            }
         } else {
             data.routines.forEach(function (r) {
                 if (q && r.name.toLowerCase().indexOf(q) === -1) return;

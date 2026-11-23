@@ -14,7 +14,7 @@
     </nav>
 
     <div class="fv-nav__right">
-        <a class="bell" href="{% url 'home:home' %}#alerts" aria-label="{{ nav_unread_count|default:0 }} unread notifications">
+        <a class="bell {% if nav_unread_count %}bell--active{% endif %}" href="{% url 'notifications:inbox' %}" aria-label="{{ nav_unread_count|default:0 }} unread notifications">
             <svg viewBox="0 0 24 24"><use href="#ic-bell"/></svg>
             {% if nav_unread_count %}<span class="bell__count">{{ nav_unread_count }}</span>{% endif %}
         </a>

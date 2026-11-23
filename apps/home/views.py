@@ -136,6 +136,26 @@ def home_view(request):
     for tip in vibe_data["tips"]:
         tip["url"] = reverse(VIBE_LINKS[tip["link"]])
 
+    # ── Passive notification triggers ──────────────────────────────────────
+    # These are idempotent (once-per-day guards are inside the service).
+    try:
+        from apps.notifications.service import (
+            check_and_notify_expiry,
+            notify_streak_milestone,
+            notify_welcome,
+        )
+        from apps.notifications.models import Notification as _Notif
+        # Welcome notification for brand-new users (fires only once)
+        if not _Notif.objects.filter(user=user, notification_type=_Notif.TYPE_WELCOME).exists():
+            notify_welcome(user)
+        # Expiry reminders
+        check_and_notify_expiry(user, products, today)
+        # Streak milestones
+        notify_streak_milestone(user, streak)
+    except Exception:
+        pass  # Never break the dashboard over a notification glitch
+    # ───────────────────────────────────────────────────────────────────────
+
     return render(request, "home/home.html", {
         "streak": streak,
         "best_streak": best,

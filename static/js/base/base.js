@@ -73,4 +73,112 @@
     document.addEventListener('click', function (e) {
         if (e.target.closest('button[type="submit"], .btn')) burst(e.clientX, e.clientY);
     });
+
+    // ── Live notification polling + toasts ──────────────────────────────
+    var POLL_URL = '/notifications/poll/';
+    var CSRF = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+    var toastContainer = null;
+    var lastPollTime = new Date().toISOString();
+    var shownIds = {};
+
+    function getToastContainer() {
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-tray';
+            toastContainer.setAttribute('aria-live', 'polite');
+            toastContainer.setAttribute('aria-atomic', 'false');
+            document.body.appendChild(toastContainer);
+        }
+        return toastContainer;
+    }
+
+    function updateBell(count) {
+        var bell = document.querySelector('.bell');
+        if (!bell) return;
+        var badge = bell.querySelector('.bell__count');
+        if (count > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'bell__count';
+                bell.appendChild(badge);
+            }
+            badge.textContent = count;
+        } else {
+            if (badge) badge.remove();
+        }
+    }
+
+    function showToast(notif) {
+        if (shownIds[notif.id]) return;
+        shownIds[notif.id] = true;
+
+        var tray = getToastContainer();
+        var toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML =
+            '<span class="toast__icon">' + (notif.icon || '🔔') + '</span>' +
+            '<div class="toast__body">' +
+                '<strong>' + notif.title + '</strong>' +
+                '<p>' + notif.message.substring(0, 90) + (notif.message.length > 90 ? '…' : '') + '</p>' +
+            '</div>' +
+            '<button type="button" class="toast__close" aria-label="Dismiss">×</button>';
+
+        if (notif.url) {
+            toast.style.cursor = 'pointer';
+            toast.addEventListener('click', function (e) {
+                if (e.target.closest('.toast__close')) return;
+                dismiss();
+                window.location.href = notif.url;
+            });
+        }
+
+        tray.appendChild(toast);
+        // Animate in
+        requestAnimationFrame(function () { toast.classList.add('toast--in'); });
+
+        function dismiss() {
+            toast.classList.remove('toast--in');
+            toast.classList.add('toast--out');
+            setTimeout(function () { toast.remove(); }, 350);
+            // Mark read in background
+            fetch('/notifications/' + notif.id + '/read/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF }
+            });
+        }
+
+        toast.querySelector('.toast__close').addEventListener('click', function (e) {
+            e.stopPropagation();
+            dismiss();
+        });
+
+        // Auto-dismiss after 7 s
+        var timer = setTimeout(dismiss, 7000);
+        toast.addEventListener('mouseenter', function () { clearTimeout(timer); });
+        toast.addEventListener('mouseleave', function () { timer = setTimeout(dismiss, 3000); });
+    }
+
+    function poll() {
+        var url = POLL_URL + '?since=' + encodeURIComponent(lastPollTime);
+        lastPollTime = new Date().toISOString();
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (!data) return;
+                updateBell(data.unread);
+                (data.fresh || []).forEach(showToast);
+            })
+            .catch(function () {}); // silent fail
+    }
+
+    // Only poll when the user is authenticated (bell element is present)
+    if (document.querySelector('.bell')) {
+        setTimeout(poll, 5000);           // first poll after 5 s
+        setInterval(poll, 30000);         // then every 30 s
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) poll(); // immediate poll on tab focus
+        });
+    }
+    // ────────────────────────────────────────────────────────────────────
 })();

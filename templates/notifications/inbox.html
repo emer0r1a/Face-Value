@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Notifications{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/notifications/inbox.css' %}">{% endblock %}
+
+{% block content %}
+<main class="inbox-wrap">
+
+  <header class="inbox-head">
+    <div>
+      <h1>Notifications <span class="script">inbox</span></h1>
+      <p class="subtitle">{{ unread_count }} unread</p>
+    </div>
+    {% if unread_count %}
+    <form method="post" action="{% url 'notifications:mark_all_read' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'notifications:inbox' %}">
+      <button type="submit" class="btn btn-ghost btn-sm">Mark all read</button>
+    </form>
+    {% endif %}
+  </header>
+
+  {% if notifications %}
+  <ul class="notif-list">
+    {% for n in notifications %}
+    <li class="notif-item {% if not n.is_read %}notif-item--unread{% endif %}" data-id="{{ n.pk }}">
+      {% if n.url %}<a class="notif-item__link" href="{{ n.url }}" aria-label="{{ n.title }}"></a>{% endif %}
+      <span class="notif-icon">{{ n.display_icon }}</span>
+      <div class="notif-body">
+        <strong class="notif-title">{{ n.title }}</strong>
+        <p class="notif-msg">{{ n.message }}</p>
+        <time class="notif-time" datetime="{{ n.created_at|date:'c' }}">{{ n.created_at|timesince }} ago</time>
+      </div>
+      <div class="notif-actions">
+        {% if not n.is_read %}
+        <button type="button" class="notif-read-btn" data-pk="{{ n.pk }}" aria-label="Mark as read">✓</button>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="inbox-empty">
+    <span>🍃</span>
+    <p>All quiet — no notifications yet.</p>
+  </div>
+  {% endif %}
+
+</main>
+{% endblock %}
+
+{% block js %}
+<script>
+(function () {
+  document.querySelectorAll('.notif-read-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pk = btn.dataset.pk;
+      fetch('/notifications/' + pk + '/read/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+      }).then(function (r) { return r.json(); }).then(function (data) {
+        var item = btn.closest('.notif-item');
+        if (item) item.classList.remove('notif-item--unread');
+        btn.remove();
+        // Update badge in navbar
+        var badge = document.querySelector('.bell__count');
+        if (data.unread === 0 && badge) badge.remove();
+        else if (badge) badge.textContent = data.unread;
+        // Update subtitle
+        var sub = document.querySelector('.inbox-head .subtitle');
+        if (sub) sub.textContent = data.unread + ' unread';
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

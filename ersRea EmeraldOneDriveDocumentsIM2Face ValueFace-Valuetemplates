@@ -1,0 +1,143 @@
+[33mcommit 46a617f4a96052dab9aedc4d8a18ac37bc629bb6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:30:31 2026 +0800
+
+    feat(product_library): add expiry tracking, vibe meter, AM/PM checks, ingredient filter, and shopping list
+
+[33mcommit f48c9c453e2216005fa3433d9500eb5cbc0254c2[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:29:04 2026 +0800
+
+    feat(ui): add frontend updates for freshness, routine checks, and shopping list
+
+[33mcommit c4fc95bcaa1167e696aadea25b01a8fea3cccf3f[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:15:17 2026 +0800
+
+    feat(ingredient_checker): update views file
+
+[33mcommit e39065ba1181bf83e10bcb03ae74c7c18e106563[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:12:33 2026 +0800
+
+    feat(profile): add HTML template, CSS, and JS files
+
+[33mcommit 2b0aa16e8d33317d59fd08efa0bee147a4d4b3b9[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:09:58 2026 +0800
+
+    feat(profile): complete profile, settings, admin, and dashboard updates
+
+[33mcommit c8fc5f7f0fa6e2137a04b9638d7e072ef927886a[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:06:40 2026 +0800
+
+    feat(routine_tracker): add HTML template, CSS, and JS files
+
+[33mcommit 69c6c0fde6fe9a2ca183259fd6342ddee11d87c5[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:04:38 2026 +0800
+
+    feat(routine_tracker): add core Django app modules
+
+[33mcommit c77a1c36a9746ef3a6d95c0afc16cbd2bd94ecc8[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 21:01:24 2026 +0800
+
+    feat(ingredient_checker): add core Django app modules
+
+[33mcommit e208210768feea8b54fd6f038803946669a3776c[m
+Author: Rea Emerald Sabellita <reaemeraldgs@gmail.com>
+Date:   Mon Nov 23 20:58:28 2026 +0800
+
+    feat(ingredient_checker): add frontend templates, static assets, and URL routing
+
+[33mcommit 559942329cef60b35ca2a28b49997d798daad749[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:15:48 2026 +0800
+
+    Delete GIT_HISTORY.txt
+
+[33mcommit acc4dfa59ccc6e3338c35a27489d38a2b5d436bd[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:15:39 2026 +0800
+
+    Delete GIT_STATUS.txt
+
+[33mcommit 0dbb65db0f544bfcb7ca8701da9c4a3bbc8c5916[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:15:30 2026 +0800
+
+    Delete GIT_UNCOMMITTED_CHANGES.patch
+
+[33mcommit 29a5f2987ca689cca938d9b49d8751a5c699bd87[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:15:20 2026 +0800
+
+    Delete apps.zip
+
+[33mcommit 76cb78b1d8296b6f7356fd060e3b2043ef779444[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:14:59 2026 +0800
+
+    Delete GIT_DIFF_STAT.txt
+
+[33mcommit 99a2a2507aa2db79601e3d0ab958b6cfdf7724f1[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:14:48 2026 +0800
+
+    Delete GIT_COMMIT_DETAILS.txt
+
+[33mcommit 7b46e17669a5aeda1b4e540fc514f9086caad03b[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:14:37 2026 +0800
+
+    Delete GIT_ALL_COMMITTED_CHANGES.patch
+
+[33mcommit b96e930e99970668eefa2037ea8e4cae5f519a4d[m
+Author: rea emerald <reaemeraldgs@gmail.com>
+Date:   Tue Nov 17 17:14:26 2026 +0800
+
+    Delete BASELINE_COMMIT.txt
+
+[33mcommit f9fc538e95d66826ea1ba4891f1e88fc3d093712[m
+Author: LAB27_USER ON WS18 <L27Y15W12@LabHCI.net>
+Date:   Tue Nov 17 16:50:15 2026 +0800
+
+    refactor(core): update project settings and migrate view logic to JavaScript
+
+[33mcommit 12c4fdc3889514ead2e27cd78605a768f0d03708[m
+Author: LAB27_USER ON WS18 <L27Y15W12@LabHCI.net>
+Date:   Tue Nov 17 16:49:01 2026 +0800
+
+    refactor(frontend): restructure HTML templates, CSS styles, and logic in JavaScript
+
+[33mcommit 024c4decafb552661f8ecb9a5926f9609fca8e3f[m
+Author: LAB27_USER ON WS18 <L27Y15W12@LabHCI.net>
+Date:   Tue Nov 10 17:49:02 2026 +0800
+
+    style(css): update and refine stylesheet rules for visual design
+
+[33mcommit a52596d365f97b834a2fa93ddcf463c4cbe993d9[m
+Author: LAB27_USER ON WS18 <L27Y15W12@LabHCI.net>
+Date:   Tue Nov 10 17:39:29 2026 +0800
+
+    style(css): add and organize stylesheet assets (base, auth, login)
+
+[33mcommit 6650768165b4cb7b4dc6ab75eb20c44a9b362904[m
+Author: LAB27_USER ON WS18 <L27Y15W12@LabHCI.net>
+Date:   Tue Nov 10 17:36:13 2026 +0800
+
+    feat(js): add client-side script modules (theme, auth)
+
+[33mcommit 96ea394842d30204fe622418ff24e06d9fa92268[m
+Author: LAB27_USER ON WS18 <L27Y15W12@LabHCI.net>
+Date:   Tue Nov 10 16:44:58 2026 +0800
+
+    style(ui): update layout and visual design for product library and core pages
+
+[33mcommit e173855e1dd3756bc5aaf4e3f964f4882c2b31e4[m
+Author: LAB27_USER ON WS18 <L27Y15W12@LabHCI.net>
+Date:   Tue Nov 10 16:19:45 2026 +0800
+
+    feat(core): initial setup of face_value architecture and modules

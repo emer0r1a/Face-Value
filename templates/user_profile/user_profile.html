@@ -18,7 +18,7 @@
             <div>
                 <span class="eyebrow">your profile</span>
                 <h1>{{ profile.full_name|default:user.username }}</h1>
-                <p class="pf-hero__meta">@{{ user.username }} · {{ user.email|default:"no email yet" }} · growing since {{ user.date_joined|date:"F Y" }}</p>
+                <p class="pf-hero__meta">@{{ user.username }} · {{ user.email|default:"no email yet" }} · glowing since {{ user.date_joined|date:"F Y" }}</p>
                 {% if profile.bio %}<p class="pf-hero__bio">{{ profile.bio }}</p>{% endif %}
             </div>
         </div>
