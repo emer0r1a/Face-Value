@@ -13,7 +13,9 @@ from apps.product_library.models import Product, ProductHistory, ProductIngredie
 from apps.product_library.views import art_for
 from apps.routine_builder.models import Routine
 from apps.routine_builder.services import DAY_KEYS, DAY_NAMES, is_scheduled_on
+from apps.routine_tracker.logic import streaks
 from apps.routine_tracker.models import RoutineLog
+from apps.routine_tracker.services import required_weekdays
 
 DONE = "completed"
 
@@ -34,25 +36,10 @@ def _completed_dates(user):
     )
 
 
-def _streaks(dates, today):
-    """Return (current, best) streak lengths from a set of dates."""
-    if not dates:
-        return 0, 0
-
-    # current: walk back from today (or yesterday if today isn't done yet)
-    day = today if today in dates else today - timedelta(days=1)
-    current = 0
-    while day in dates:
-        current += 1
-        day -= timedelta(days=1)
-
-    best = run = 0
-    prev = None
-    for d in sorted(dates):
-        run = run + 1 if prev and d - prev == timedelta(days=1) else 1
-        best = max(best, run)
-        prev = d
-    return current, best
+def _streaks(user, dates, today):
+    """(current, best). Shared with the tracker page so both always agree;
+    days with nothing scheduled don't break a streak."""
+    return streaks(dates, today, required_weekdays(user))
 
 
 def _vibe(products, routines):
@@ -91,7 +78,7 @@ def home_view(request):
     today = timezone.localdate()
 
     dates = _completed_dates(user)
-    streak, best = _streaks(dates, today)
+    streak, best = _streaks(user, dates, today)
 
     week = []
     for i in range(6, -1, -1):
@@ -178,7 +165,7 @@ def toggle_routine(request, routine_id):
     log.completed_at = timezone.now() if done else None
     log.save()
 
-    streak, best = _streaks(_completed_dates(request.user), today)
+    streak, best = _streaks(request.user, _completed_dates(request.user), today)
     return JsonResponse({"ok": True, "done": done, "streak": streak, "best": best})
 
 
