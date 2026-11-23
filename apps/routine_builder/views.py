@@ -26,7 +26,9 @@ from .services import (
     SLOTS,
     default_step_name,
     default_time,
+    checks_for,
     find_clashes,
+    product_facts,
     scheduled_days,
     sync_alerts,
 )
@@ -71,10 +73,14 @@ def routine_list_view(request):
         .values("routine_id").annotate(n=Count("id")).values_list("routine_id", "n")
     )
 
+    today = timezone.localdate()
+    facts = product_facts([it.product_id for r in routines for it in r.items.all()], today)
+
     payload = []
     for r in routines:
         slot = r.routine_type.lower()
         days = scheduled_days(r)
+        r.checks = [c for c in checks_for(slot, [it.product_id for it in r.items.all()], facts) if c["severity"] == "warn"]
         r.slot = slot
         r.tone = SLOT_TONE.get(slot, "lime")
         r.emoji = SLOT_EMOJI.get(slot, "🌿")
@@ -188,7 +194,10 @@ def clash_preview_view(request):
     """Live clash check for the builder: ?ids=1,2,3 (the steps, in order)."""
     ids = [int(i) for i in request.GET.get("ids", "").split(",") if i.strip().isdigit()]
     ids = ids[:MAX_STEPS]
+    slot = request.GET.get("type", "").lower()
     owned = set(Product.objects.filter(user=request.user, pk__in=ids).values_list("pk", flat=True))
+    kept = [i for i in ids if i in owned]
+    checks = checks_for(slot, kept, product_facts(kept, timezone.localdate()))
     clashes = find_clashes(request.user, [i for i in ids if i in owned])
     have_ingredients = (
         Product.objects.filter(user=request.user, pk__in=owned, product_ingredients__isnull=False)
@@ -197,6 +206,7 @@ def clash_preview_view(request):
     return JsonResponse({
         "checked": len(owned),
         "with_ingredients": have_ingredients,
+        "checks": checks,
         "clashes": [{
             "pair": c["pair"], "products": c["products"], "severity": c["severity"],
             "message": c["message"], "tip": c["tip"],

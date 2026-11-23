@@ -4,18 +4,23 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.ingredient_checker.models import IngredientAlert, IngredientInteraction
 from apps.notifications.models import Notification
+from apps.product_library import expiry
 from apps.product_library.models import Product, ProductHistory, ProductIngredient
+from apps.product_library.services import shopping_items
 from apps.product_library.views import art_for
 from apps.routine_builder.models import Routine
-from apps.routine_builder.services import DAY_KEYS, DAY_NAMES, is_scheduled_on
+from apps.routine_builder.services import DAY_KEYS, DAY_NAMES, checks_for, is_scheduled_on, product_facts
 from apps.routine_tracker.logic import streaks
 from apps.routine_tracker.models import RoutineLog
-from apps.routine_tracker.services import required_weekdays
+from apps.routine_tracker.services import build_summary, required_weekdays
+
+from . import vibe
 
 DONE = "completed"
 
@@ -42,34 +47,33 @@ def _streaks(user, dates, today):
     return streaks(dates, today, required_weekdays(user))
 
 
-def _vibe(products, routines):
-    """Balance/hydration/shelf cards, all derived from the user's own data."""
-    cats = [(p.category or "").lower() for p in products]
-    has = lambda *words: any(w in c for c in cats for w in words)
+def _care_notes(products, active_routines, today):
+    """Expiry and timing heads-ups for the dashboard (at most four)."""
+    notes = []
+    for p in products:
+        ex = expiry.info(p.opened_on, p.pao_months, today)
+        if p.status == "active" and ex and ex["state"] in ("expired", "soon"):
+            notes.append({
+                "icon": "⏳", "title": f"{p.product_name} {'has expired' if ex['state'] == 'expired' else 'expires soon'}",
+                "text": ex["label"] + ".", "url": reverse("product_library:detail", args=[p.pk]), "level": ex["state"],
+            })
+    facts = product_facts({it.product_id for r in active_routines for it in r.items.all()}, today)
+    for r in active_routines:
+        for c in checks_for(r.routine_type.lower(), [it.product_id for it in r.items.all()], facts):
+            if c["key"] in ("no-spf", "retinoid-day"):
+                notes.append({
+                    "icon": c["icon"], "title": c["title"], "text": f"{r.routine_name}. {c['tip']}",
+                    "url": reverse("routine_builder:edit", args=[r.pk]), "level": "warn",
+                })
+    notes.sort(key=lambda n: n["level"] == "soon")  # expired and warnings first
+    return notes[:4]
 
-    types = {r.routine_type.lower() for r in routines}
-    balance = 0
-    balance += 40 if "morning" in types else 0
-    balance += 40 if "evening" in types else 0
-    balance += 20 if has("sunscreen", "spf") else 0
 
-    hydration = 0
-    hydration += 50 if has("moistur", "cream") else 0
-    hydration += 30 if has("serum", "essence", "toner", "hydrat") else 0
-    hydration += 20 if has("cleanser") else 0
-
-    inactive = [p for p in products if p.status != "active"]
-    shelf = 100 if products and not inactive else (0 if not products else 60)
-
-    return [
-        {"key": "balance", "label": "Routine balance", "value": balance,
-         "hint": "Morning + evening + SPF" if balance < 100 else "Beautifully balanced"},
-        {"key": "hydration", "label": "Hydration", "value": hydration,
-         "hint": "Add a moisturizer or serum" if hydration < 80 else "Plenty of moisture"},
-        {"key": "shelf", "label": "Shelf freshness", "value": shelf,
-         "hint": (f"{len(inactive)} product(s) need a look" if inactive
-                  else ("Add your first product" if not products else "All products active"))},
-    ]
+VIBE_LINKS = {
+    "routines": "routine_builder:list", "add_product": "product_library:add",
+    "shopping": "product_library:shopping", "ingredients": "ingredient_checker:hub",
+    "tracker": "routine_tracker:tracker",
+}
 
 
 @login_required
@@ -127,6 +131,11 @@ def home_view(request):
     )
     reminders = Notification.objects.filter(user=user, is_read=False).order_by("scheduled_at")[:3]
 
+    summary, _logs = build_summary(user, today, active_routines)
+    vibe_data = vibe.build(user, today, active_routines, summary["week_pct"], streak, products)
+    for tip in vibe_data["tips"]:
+        tip["url"] = reverse(VIBE_LINKS[tip["link"]])
+
     return render(request, "home/home.html", {
         "streak": streak,
         "best_streak": best,
@@ -144,7 +153,9 @@ def home_view(request):
         "alerts": alerts,
         "activity": activity,
         "reminders": reminders,
-        "vibe": _vibe(products, routines),
+        "vibe": vibe_data,
+        "care": _care_notes(products, active_routines, today),
+        "shopping_count": shopping_items(user, today)["count"],
         "hour": timezone.localtime().hour,
     })
 

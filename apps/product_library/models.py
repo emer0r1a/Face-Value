@@ -14,7 +14,11 @@ class Product(models.Model):
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to="product_images/", blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    # "active", "archived" or "finished" (used up, on the shopping list)
     status = models.CharField(max_length=20, default="active")
+    # Expiry tracking: opened_on + pao_months (period after opening)
+    opened_on = models.DateField(null=True, blank=True)
+    pao_months = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.brand} - {self.product_name}"

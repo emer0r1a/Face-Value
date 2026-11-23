@@ -168,3 +168,39 @@ def sync_alerts(routine):
             ),
         )
     return len(wanted)
+
+
+def product_facts(product_ids, today):
+    """{product_id: fact dict} for routines.checks, in two queries."""
+    from apps.product_library import expiry
+    from apps.product_library.models import Product, ProductIngredient
+
+    ids = set(product_ids)
+    ingredients = {}
+    for pid, name in ProductIngredient.objects.filter(product_id__in=ids).values_list(
+        "product_id", "ingredient__ingredient_name"
+    ):
+        ingredients.setdefault(pid, []).append(name.lower())
+
+    facts = {}
+    for p in Product.objects.filter(pk__in=ids):
+        facts[p.pk] = {
+            "name": p.product_name,
+            "category": p.category or "",
+            "ingredients": ingredients.get(p.pk, []),
+            "expiry": expiry.info(p.opened_on, p.pao_months, today),
+            "finished": p.status == "finished",
+        }
+    return facts
+
+
+def checks_for(slot, product_ids, facts):
+    """Run routines.checks for a routine's ordered product ids."""
+    from .checks import routine_checks
+
+    seen, products = set(), []
+    for pid in product_ids:
+        if pid in facts and pid not in seen:
+            seen.add(pid)
+            products.append(facts[pid])
+    return routine_checks(slot, products)

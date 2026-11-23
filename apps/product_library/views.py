@@ -1,4 +1,6 @@
+import json
 import re
+from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,6 +11,7 @@ from io import BytesIO
 
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
@@ -17,6 +20,8 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from apps.ingredient_checker.models import IngredientInteraction
 from apps.routine_builder.models import RoutineItem
 
+from . import expiry
+from .services import attach_expiry, shopping_items
 from .models import (
     Ingredient,
     Product,
@@ -173,6 +178,7 @@ def parse_ingredients(raw_text):
 def product_list_view(request):
     query = request.GET.get("q", "").strip()
     category = request.GET.get("category", "").strip()
+    ingredient = request.GET.get("ingredient", "").strip()
 
     products = (
         Product.objects.filter(user=request.user)
@@ -198,6 +204,12 @@ def product_list_view(request):
     if category:
         products = products.filter(category__iexact=category)
 
+    # ?ingredient=Niacinamide: everything on the shelf that contains it
+    if ingredient:
+        products = products.filter(
+            product_ingredients__ingredient__ingredient_name__iexact=ingredient
+        ).distinct()
+
     # Only offer categories the user actually has products in
     user_categories = (
         Product.objects.filter(user=request.user)
@@ -206,7 +218,8 @@ def product_list_view(request):
         .distinct()
     )
 
-    products = list(products)
+    today = timezone.localdate()
+    products = attach_expiry(list(products), today)
     for p in products:
         p.icon = icon_for(p.category)
         p.art = art_for(p.category)
@@ -221,6 +234,8 @@ def product_list_view(request):
         "category_counts": sorted(counts.items()),
         "query": query,
         "selected_category": category,
+        "ingredient": ingredient,
+        "shopping_count": shopping_items(request.user, today)["count"],
         "total_count": Product.objects.filter(user=request.user).count(),
     })
 
@@ -232,12 +247,34 @@ def _form_values(request):
         "category": request.POST.get("category", "").strip(),
         "description": request.POST.get("description", "").strip(),
         "ingredients": request.POST.get("ingredients", ""),
+        "opened_on": request.POST.get("opened_on", "").strip(),
+        "pao_months": request.POST.get("pao_months", "").strip(),
     }
+
+
+def _parse_expiry(values, today):
+    """(opened_on, pao_months, error) from the raw form strings."""
+    opened_on = pao = None
+    if values["opened_on"]:
+        try:
+            opened_on = date.fromisoformat(values["opened_on"])
+        except ValueError:
+            return None, None, "Enter the opened date as a real date."
+        if opened_on > today:
+            return None, None, "The opened date can't be in the future."
+    if values["pao_months"]:
+        if not values["pao_months"].isdigit() or not 1 <= int(values["pao_months"]) <= 60:
+            return None, None, "Use within (months) must be a number from 1 to 60."
+        pao = int(values["pao_months"])
+    return opened_on, pao, None
 
 
 @login_required
 def add_product_view(request):
-    context = {"categories": CATEGORIES, "values": {}}
+    pre = request.GET.get("category", "")
+    context = {"categories": CATEGORIES, "values": {"category": pre if pre in CATEGORIES else ""},
+               "pao_choices": expiry.PAO_CHOICES, "pao_defaults_json": json.dumps(expiry.DEFAULT_PAO),
+               "today": timezone.localdate()}
 
     if request.method == "POST":
         values = _form_values(request)
@@ -247,6 +284,8 @@ def add_product_view(request):
         error = _validate_product_form(
             values["product_name"], values["brand"], values["category"], names
         )
+        opened_on, pao, expiry_error = _parse_expiry(values, timezone.localdate())
+        error = error or expiry_error
         upload = request.FILES.get("image")
         error = error or _image_error(upload)
         if error:
@@ -260,6 +299,8 @@ def add_product_view(request):
                 brand=values["brand"],
                 category=values["category"],
                 description=values["description"],
+                opened_on=opened_on,
+                pao_months=pao,
             )
             _save_ingredients(product, names)
             if upload:
@@ -279,7 +320,9 @@ def add_product_view(request):
 @login_required
 def edit_product_view(request, pk):
     product = _own_product(request, pk)
-    context = {"categories": CATEGORIES, "product": product}
+    context = {"categories": CATEGORIES, "product": product,
+               "pao_choices": expiry.PAO_CHOICES, "pao_defaults_json": json.dumps(expiry.DEFAULT_PAO),
+               "today": timezone.localdate()}
 
     if request.method == "POST":
         values = _form_values(request)
@@ -289,6 +332,8 @@ def edit_product_view(request, pk):
         error = _validate_product_form(
             values["product_name"], values["brand"], values["category"], names
         )
+        opened_on, pao, expiry_error = _parse_expiry(values, timezone.localdate())
+        error = error or expiry_error
         upload = request.FILES.get("image")
         error = error or _image_error(upload)
         if error:
@@ -304,6 +349,8 @@ def edit_product_view(request, pk):
             product.brand = values["brand"]
             product.category = values["category"]
             product.description = values["description"]
+            product.opened_on = opened_on
+            product.pao_months = pao
             product.save()
             _save_ingredients(product, names)
             ProductHistory.objects.create(
@@ -319,6 +366,8 @@ def edit_product_view(request, pk):
         "brand": product.brand,
         "category": product.category,
         "description": product.description,
+        "opened_on": product.opened_on.isoformat() if product.opened_on else "",
+        "pao_months": str(product.pao_months or ""),
         "ingredients": ", ".join(
             product.product_ingredients.select_related("ingredient")
             .order_by("ingredient_order")
@@ -377,6 +426,8 @@ def product_detail_view(request, pk):
 
     return render(request, "product_library/product_detail.html", {
         "product": product,
+        "expiry": expiry.info(product.opened_on, product.pao_months, timezone.localdate()),
+        "suggested_pao": expiry.default_pao(product.category),
         "icon": icon_for(product.category),
         "art": art_for(product.category),
         "completeness": completeness,
@@ -446,3 +497,67 @@ def report_product_view(request, pk):
     if back and url_has_allowed_host_and_scheme(back, {request.get_host()}):
         return redirect(back)
     return redirect("product_library:detail", pk=product.pk)
+
+
+
+@login_required
+@require_POST
+def open_product_view(request, pk):
+    """"I just opened it": start the clock (and suggest a typical PAO)."""
+    product = _own_product(request, pk)
+    product.opened_on = timezone.localdate()
+    if not product.pao_months:
+        product.pao_months = expiry.default_pao(product.category)
+    product.save(update_fields=["opened_on", "pao_months"])
+    ProductHistory.objects.create(
+        product=product, user=request.user, action="opened",
+        notes=f"Opened. Use within {product.pao_months} months.",
+    )
+    messages.success(request, f"Marked as opened. Use within {product.pao_months} months.")
+    return redirect("product_library:detail", pk=product.pk)
+
+
+@login_required
+@require_POST
+def finish_product_view(request, pk):
+    """Used it all up: leaves the active shelf and lands on the shopping list."""
+    product = _own_product(request, pk)
+    product.status = "finished"
+    product.save(update_fields=["status"])
+    ProductHistory.objects.create(
+        product=product, user=request.user, action="finished",
+        notes="Used it all up. Added to the shopping list.",
+    )
+    messages.success(request, "Added to your shopping list.")
+    return redirect("product_library:detail", pk=product.pk)
+
+
+@login_required
+@require_POST
+def restock_product_view(request, pk):
+    """Bought a fresh one: back on the shelf, expiry clock cleared."""
+    product = _own_product(request, pk)
+    product.status = "active"
+    product.opened_on = None
+    product.save(update_fields=["status", "opened_on"])
+    ProductHistory.objects.create(
+        product=product, user=request.user, action="restocked",
+        notes="Replaced with a fresh one.",
+    )
+    messages.success(request, f"“{product.product_name}” is restocked. Open date cleared.")
+    back = request.POST.get("next", "")
+    if back and url_has_allowed_host_and_scheme(back, {request.get_host()}):
+        return redirect(back)
+    return redirect("product_library:detail", pk=product.pk)
+
+
+@login_required
+def shopping_view(request):
+    today = timezone.localdate()
+    data = shopping_items(request.user, today)
+    for group in ("replace", "soon", "archived"):
+        for p in data[group]:
+            p.art = art_for(p.category)
+    return render(request, "product_library/shopping_list.html", {
+        **data, "total": data["count"] + len(data["gaps"]),
+    })
