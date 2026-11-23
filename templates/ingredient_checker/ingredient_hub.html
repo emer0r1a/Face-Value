@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Ingredients{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/ingredient_checker/ingredient_hub.css' %}">{% endblock %}
+
+{% block content %}
+<main class="ih" id="ih" data-add-product="{{ add_product_url }}">
+
+    <!-- ================= HERO ================= -->
+    <header class="ih-hero">
+        <svg class="deco cloud cloud--r bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+        <svg class="deco sparkle sparkle--r" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div class="ih-hero__copy">
+            <span class="eyebrow">know what you're layering</span>
+            <h1>Will these play <span class="script">nice?</span></h1>
+            <p>Pick products or ingredients to see how they layer, or browse the guide to learn what each one actually does.</p>
+        </div>
+        <div class="ih-hero__art" aria-hidden="true">
+            <svg class="art tone-sky" viewBox="0 0 120 160"><use href="#a-jar"/></svg>
+            <svg class="art tone-lav big" viewBox="0 0 120 160"><use href="#a-dropper"/></svg>
+            <svg class="art tone-pink" viewBox="0 0 120 160"><use href="#a-bottle"/></svg>
+        </div>
+        <div class="ih-hero__stats">
+            <div><strong>{{ ingredient_total }}</strong><span>ingredients</span></div>
+            <div><strong>{{ clash_total }}</strong><span>known clashes</span></div>
+        </div>
+    </header>
+
+    <div class="ih-tabs" role="tablist" aria-label="Ingredient tools">
+        <button type="button" class="pill active" role="tab" id="tab-checker" data-tab="checker" aria-selected="true" aria-controls="panel-checker"><svg viewBox="0 0 24 24"><use href="#ic-flask"/></svg> Clash checker</button>
+        <button type="button" class="pill" role="tab" id="tab-guide" data-tab="guide" aria-selected="false" aria-controls="panel-guide" tabindex="-1"><svg viewBox="0 0 24 24"><use href="#ic-list"/></svg> Ingredient guide</button>
+    </div>
+
+    <!-- ================= CHECKER ================= -->
+    <section class="ih-panel" id="panel-checker" role="tabpanel" aria-labelledby="tab-checker">
+        <div class="checker">
+            <div class="card picker">
+                <header class="card__head">
+                    <h2>What are you <span class="script">layering?</span></h2>
+                    <span class="chip chip--sun" id="pickCount">0 / 8</span>
+                </header>
+
+                <div class="bowl" id="bowl">
+                    <div class="bowl__head"><h3>Your stack</h3><button type="button" class="linkbtn" id="clearStack" hidden>Clear all</button></div>
+                    <ul class="stackchips" id="stackList" aria-live="polite"></ul>
+                    <p class="bowl__hint" id="bowlHint">Tap things below to add them. Mix products and ingredients if you like.</p>
+                </div>
+
+                <div class="srcs" role="group" aria-label="What to pick from">
+                    <button type="button" class="pill active" data-src="products">My products</button>
+                    <button type="button" class="pill" data-src="ingredients">Ingredients</button>
+                    <button type="button" class="pill" data-src="routines">My routines</button>
+                </div>
+                <div class="search-box"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg><input type="text" id="pickSearch" placeholder="Search…" autocomplete="off" aria-label="Search items to add"></div>
+                <div class="pickgrid" id="pickGrid"></div>
+            </div>
+
+            <aside class="card result" id="result" aria-live="polite">
+                <header class="card__head"><h2>Your <span class="script">results</span></h2><span class="chip chip--sky" id="resCount">0 items</span></header>
+
+                <div class="verdict" id="verdict" data-state="empty">
+                    <span class="verdict__face" id="vFace">🌱</span>
+                    <div><strong id="vTitle">Pick two or more</strong><p id="vText">Add at least two products or ingredients and we'll compare them.</p></div>
+                </div>
+                <div class="meter" id="vMeter" hidden>
+                    <div class="meter__row"><span id="vMeterLabel"></span></div>
+                    <div class="meter__bar"><i id="vMeterFill"></i></div>
+                </div>
+
+                <div class="findings" id="findings"></div>
+                <p class="seen" id="seen"></p>
+                <p class="note">General guidance for common ingredients, not medical advice. If your skin is reacting, stop using the product and ask a pharmacist or doctor.</p>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ================= GUIDE ================= -->
+    <section class="ih-panel" id="panel-guide" role="tabpanel" aria-labelledby="tab-guide" hidden>
+        <div class="gtools">
+            <div class="search-box"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg><input type="text" id="guideSearch" placeholder="Search ingredients or what they do…" autocomplete="off" aria-label="Search the ingredient guide"></div>
+            <div class="gfilters" id="groupPills" role="group" aria-label="Filter by what they do"></div>
+        </div>
+        <p class="gmeta" id="guideMeta" aria-live="polite"></p>
+        <div class="ggrid" id="guideGrid"></div>
+        <div class="rb-empty" id="guideEmpty" hidden>
+            <div class="rb-empty__art"><svg class="art tone-sky" viewBox="0 0 120 160"><use href="#a-dropper"/></svg></div>
+            <h3>Nothing matches</h3>
+            <p>Try a different word, or clear the filters to see everything.</p>
+            <button type="button" class="btn btn-primary" id="guideReset">Clear filters</button>
+        </div>
+    </section>
+</main>
+
+<!-- Ingredient detail -->
+<dialog id="ingDialog" class="dlg" aria-labelledby="dName">
+    <div class="dlg__tags"><span class="chip" id="dGroup"></span></div>
+    <h3 id="dName">Ingredient</h3>
+    <p class="dlg__fn" id="dFn"></p>
+    <p class="dlg__desc" id="dDesc"></p>
+    <div class="dlg__caution" id="dCaution" hidden></div>
+
+    <section class="dlg__sec" id="dPartnersSec">
+        <h4>Doesn't always mix with</h4>
+        <ul class="partners" id="dPartners"></ul>
+    </section>
+    <section class="dlg__sec" id="dProductsSec">
+        <h4>In your products</h4>
+        <ul class="inprods" id="dProducts"></ul>
+    </section>
+
+    <div class="form-actions"><button type="button" class="btn btn-ghost" data-close>Close</button><button type="button" class="btn btn-primary" id="dCheck">Check with my stack</button></div>
+</dialog>
+
+{{ hub_data|json_script:"hub-data" }}
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/ingredient_checker/ingredient_hub.js' %}"></script>{% endblock %}

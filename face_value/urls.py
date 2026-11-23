@@ -30,6 +30,7 @@ urlpatterns = [
     path("settings/", include("apps.user_settings.urls")),
     path("products/", include("apps.product_library.urls")),
     path("routines/", include("apps.routine_builder.urls")),
+    path("ingredients/", include("apps.ingredient_checker.urls")),
 
     path("", landing_view, name="landing"),
 ]

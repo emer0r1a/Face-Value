@@ -211,3 +211,6 @@
     .form-card { padding: 30px 22px; } .grid-2 { grid-template-columns: 1fr; gap: 0; }
     .ing-fn { display: none; }
 }
+
+.ing-link { display: inline-block; margin-top: 8px; font: 700 13px var(--font-body); color: var(--ink); text-decoration: underline; text-decoration-color: var(--lime); text-decoration-thickness: 3px; text-underline-offset: 3px; }
+.ing-link:hover { text-decoration-color: var(--sage); }

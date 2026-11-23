@@ -78,7 +78,7 @@
                             <span class="ing-fn">{% if it.ingredient.function == 'Not yet classified' %}Not classified yet{% else %}{{ it.ingredient.function }}{% endif %}</span>
                             {% if it.ingredient.caution %}<span class="ing-flag" title="Has a caution">!</span>{% endif %}
                         </summary>
-                        <div class="ing-detail"><p>{{ it.ingredient.description }}</p>{% if it.ingredient.caution %}<p class="ing-caution">🌦️ {{ it.ingredient.caution }}</p>{% endif %}</div>
+                        <div class="ing-detail"><p>{{ it.ingredient.description }}</p>{% if it.ingredient.caution %}<p class="ing-caution">🌦️ {{ it.ingredient.caution }}</p>{% endif %}<a class="ing-link" href="{% url 'ingredient_checker:hub' %}?q={{ it.ingredient.ingredient_name|urlencode }}#guide">See in the ingredient guide →</a></div>
                     </details></li>
                     {% endfor %}
                 </ol>

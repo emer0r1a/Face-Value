@@ -9,6 +9,9 @@
         <a href="{% url 'home:home' %}" class="{% if request.resolver_match.app_name == 'home' %}active{% endif %}">Dashboard</a>
         <a href="{% url 'product_library:list' %}" class="{% if request.resolver_match.app_name == 'product_library' %}active{% endif %}">Products</a>
         <a href="{% url 'routine_builder:list' %}" class="{% if request.resolver_match.app_name == 'routine_builder' %}active{% endif %}">Routines</a>
+        <a href="{% url 'ingredient_checker:hub' %}" class="{% if request.resolver_match.app_name == 'ingredient_checker' %}active{% endif %}">Ingredients</a>
+        <a href="{% url 'user_profile:profile' %}">Profile</a>
+        <a href="{% url 'user_settings:settings' %}">Settings</a>
     </nav>
 
     <div class="fv-nav__right">
@@ -25,8 +28,7 @@
                 <a href="{% url 'home:home' %}" class="menu__nav" role="menuitem">Dashboard</a>
                 <a href="{% url 'product_library:list' %}" class="menu__nav" role="menuitem">Products</a>
                 <a href="{% url 'routine_builder:list' %}" class="menu__nav" role="menuitem">Routines</a>
-                <a href="{% url 'user_profile:profile' %}" role="menuitem">My profile</a>
-                <a href="{% url 'user_settings:settings' %}" role="menuitem">Settings</a>
+                <a href="{% url 'ingredient_checker:hub' %}" class="menu__nav" role="menuitem">Ingredients</a>
                 {% if user.is_staff %}<a href="{% url 'admin:index' %}" role="menuitem">Admin panel</a>{% endif %}
                 <form method="post" action="{% url 'login:logout' %}">
                     {% csrf_token %}

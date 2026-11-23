@@ -264,7 +264,7 @@
 <!-- ================= ALERTS + ACTIVITY ================= -->
 <div class="dgrid dgrid--even">
     <section class="card reveal" id="alerts">
-        <header class="card__head"><h2>Heads <span class="script">up</span></h2>{% if nav_unread_count %}<span class="chip chip--pink">{{ nav_unread_count }} new</span>{% endif %}</header>
+        <header class="card__head"><h2>Heads <span class="script">up</span></h2>{% if nav_unread_count %}<span class="chip chip--pink">{{ nav_unread_count }} new</span>{% else %}<a class="more" href="{% url 'ingredient_checker:hub' %}">Ingredient checker →</a>{% endif %}</header>
         {% for a in alerts %}
         <div class="alert alert--{{ a.severity|lower }}"><strong>{{ a.interaction.ingredient_1 }} + {{ a.interaction.ingredient_2 }}</strong><p>{{ a.alert_message }}</p></div>
         {% endfor %}
@@ -272,6 +272,7 @@
         <div class="alert alert--info"><strong>{{ n.title }}</strong><p>{{ n.message }}</p></div>
         {% endfor %}
         {% if not alerts and not reminders %}<p class="muted-line">🍃 All calm. No ingredient cautions or reminders right now.</p>{% endif %}
+        {% if alerts %}<p class="muted-line alerts__more"><a class="more" href="{% url 'ingredient_checker:hub' %}">Check these ingredients →</a></p>{% endif %}
     </section>
 
     <section class="card reveal">
