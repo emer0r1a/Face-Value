@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Tracker{% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'css/routine_tracker/tracker.css' %}">{% endblock %}
+
+{% block content %}
+<main class="tr" id="tr">
+
+    <!-- ================= HERO ================= -->
+    <header class="tr-hero">
+        <svg class="deco cloud cloud--r bob" viewBox="0 0 120 64"><use href="#i-cloud"/></svg>
+        <svg class="deco sparkle sparkle--r" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div class="tr-hero__copy">
+            <span class="eyebrow">your consistency</span>
+            <h1>Keep the <span class="script">glow</span> going</h1>
+            <p id="heroMsg">Check in your routines each day and watch your streak grow.</p>
+            <div class="milestone" id="milestone" hidden>
+                <div class="milestone__row"><span id="msLabel"></span><b id="msCount"></b></div>
+                <div class="leafbar"><i id="msFill"></i><svg class="leaf" id="msLeaf" viewBox="0 0 32 32"><use href="#i-leaf"/></svg></div>
+            </div>
+        </div>
+        <div class="medal" id="medal" aria-live="polite">
+            <div class="medal__ring">
+                <svg class="medal__leaf" viewBox="0 0 32 32" aria-hidden="true"><use href="#i-leaf"/></svg>
+                <strong id="streakNum">0</strong>
+                <span>day streak</span>
+            </div>
+            <p class="medal__best">Best: <b id="bestNum">0</b></p>
+        </div>
+    </header>
+
+    {% if not has_routines %}
+    <div class="rb-empty">
+        <div class="rb-empty__art"><svg class="art tone-lime" viewBox="0 0 120 160"><use href="#a-pump"/></svg></div>
+        <h3>Nothing to track yet</h3>
+        <p>Build a routine and pick the days it happens. It will show up here for you to tick off.</p>
+        <a href="{{ builder_url }}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Build a routine</a>
+    </div>
+    {% endif %}
+
+    <div class="tr-grid" {% if not has_routines %}hidden{% endif %}>
+        <!-- ================= CHECKLIST ================= -->
+        <section class="card checklist" id="checklist">
+            <header class="card__head">
+                <h2>Daily <span class="script">checklist</span></h2>
+                <span class="chip chip--sun" id="dayChip">0/0</span>
+            </header>
+
+            <div class="dstrip" id="dayStrip" role="group" aria-label="Choose a day to check in"></div>
+            <p class="daynote" id="dayNote"></p>
+
+            <div class="leafbar"><i id="dayFill"></i><svg class="leaf" id="dayLeaf" viewBox="0 0 32 32"><use href="#i-leaf"/></svg></div>
+            <div class="daydone" id="dayDone" hidden><span>🌿</span><div><strong>Day complete!</strong><p id="dayDoneMsg"></p></div></div>
+
+            <div class="trklist" id="dayList"></div>
+            <div class="rest" id="dayRest" hidden><span>🌙</span><div><strong>Rest day</strong><p>Nothing is scheduled for this day, and rest days never break your streak.</p></div></div>
+        </section>
+
+        <!-- ================= CALENDAR ================= -->
+        <section class="card cal" id="cal">
+            <header class="card__head">
+                <h2>Your <span class="script" id="calMonth">month</span></h2>
+                <div class="cal__nav">
+                    <button type="button" class="icon-btn" id="calPrev" aria-label="Previous month"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg></button>
+                    <button type="button" class="icon-btn" id="calNext" aria-label="Next month"><svg viewBox="0 0 24 24" style="transform:scaleX(-1)"><use href="#ic-arrow-l"/></svg></button>
+                </div>
+            </header>
+            <div class="cal__dow" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div class="cal__grid" id="calGrid" role="grid" aria-label="Month of check-ins"></div>
+            <p class="cal__detail" id="calDetail" aria-live="polite">Tap a day to see how it went.</p>
+            <ul class="legend" aria-label="Legend">
+                <li><i class="lg lg--full"></i>All done</li>
+                <li><i class="lg lg--part"></i>Some</li>
+                <li><i class="lg lg--miss"></i>Missed</li>
+                <li><i class="lg lg--rest"></i>Rest day</li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <section class="tstats" id="tstats" {% if not has_routines %}hidden{% endif %}>
+        <article class="tstat tone-lime"><div class="donut" id="donutWeek"><b data-n>0</b><small>%</small></div><div><span>This week</span><em>Last 7 days</em></div></article>
+        <article class="tstat tone-sky"><div class="donut" id="donutMonth"><b data-n>0</b><small>%</small></div><div><span>This month</span><em>Last 30 days</em></div></article>
+        <article class="tstat tone-sun"><div class="bignum"><b id="statTotal">0</b></div><div><span>Check-ins</span><em>Routines completed</em></div></article>
+        <article class="tstat tone-lav"><div class="bignum"><b id="statBest">0</b></div><div><span>Best streak</span><em>Days in a row</em></div></article>
+    </section>
+
+    <!-- ================= BADGES ================= -->
+    <section class="card badges" id="badges" {% if not has_routines %}hidden{% endif %}>
+        <header class="card__head"><h2>Little <span class="script">rewards</span></h2><span class="chip chip--pink" id="badgeCount">0 / 8</span></header>
+        <div class="bgrid" id="badgeGrid"></div>
+    </section>
+
+    <!-- ================= PER ROUTINE ================= -->
+    <section class="card consist" id="consist" {% if not has_routines %}hidden{% endif %}>
+        <header class="card__head"><h2>Routine <span class="script">consistency</span></h2><span class="chip">Last 30 days</span></header>
+        <div class="clist" id="consistList"></div>
+    </section>
+</main>
+
+<div class="toast" id="trToast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="badgeDlg" class="dlg" aria-labelledby="bdTitle">
+    <div class="dlg__emoji" id="bdEmoji">🌱</div>
+    <span class="eyebrow">new badge</span>
+    <h3 id="bdTitle">Badge</h3>
+    <p class="muted-line" id="bdDesc"></p>
+    <div class="form-actions"><button type="button" class="btn btn-primary" data-close>Lovely</button></div>
+</dialog>
+
+{{ tracker_data|json_script:"tracker-data" }}
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/routine_tracker/tracker.js' %}"></script>{% endblock %}

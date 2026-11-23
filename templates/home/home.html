@@ -122,7 +122,7 @@
             {% endif %}
         </header>
 
-        <p class="tracker__sub">{{ today_name }} · <a href="{% url 'routine_builder:list' %}">Plan your week</a></p>
+        <p class="tracker__sub">{{ today_name }} · <a href="{% url 'routine_builder:list' %}">Plan your week</a> · <a href="{% url 'routine_tracker:tracker' %}">Full tracker</a></p>
 
         <div class="week" aria-label="Last 7 days">
             {% for d in week %}
