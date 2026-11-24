@@ -52,6 +52,23 @@
 {% block js %}
 <script>
 (function () {
+  // Opening a notification (click, middle-click or keyboard) marks it read.
+  // keepalive lets the request finish even though the page is navigating away.
+  function markRead(item) {
+    if (!item || !item.classList.contains('notif-item--unread')) return;
+    fetch('/notifications/' + item.dataset.id + '/read/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      keepalive: true
+    });
+    item.classList.remove('notif-item--unread');
+  }
+  document.querySelectorAll('.notif-item__link').forEach(function (link) {
+    ['click', 'auxclick'].forEach(function (evt) {
+      link.addEventListener(evt, function () { markRead(link.closest('.notif-item')); });
+    });
+  });
+
   document.querySelectorAll('.notif-read-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var pk = btn.dataset.pk;

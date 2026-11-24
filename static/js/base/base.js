@@ -144,7 +144,8 @@
             // Mark read in background
             fetch('/notifications/' + notif.id + '/read/', {
                 method: 'POST',
-                headers: { 'X-CSRFToken': CSRF }
+                headers: { 'X-CSRFToken': CSRF },
+                keepalive: true   // still completes when the click navigates to another page
             });
         }
 
