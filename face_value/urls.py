@@ -15,9 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.conf import settings
-from django.conf.urls.static import static
+
+from apps.product_library.media_views import serve_media
 
 from .views import landing_view
 
@@ -38,10 +39,8 @@ urlpatterns = [
     path("tracker/", include("apps.routine_tracker.urls")),
     path("notifications/", include("apps.notifications.urls")),
 
+    # uploaded photos, read from the database (see apps/product_library/storage.py)
+    re_path(r"^%s(?P<name>.+)$" % settings.MEDIA_URL.lstrip("/"), serve_media, name="media"),
+
     path("", landing_view, name="landing"),
 ]
-
-urlpatterns += static(
-    settings.MEDIA_URL,
-    document_root=settings.MEDIA_ROOT
-)

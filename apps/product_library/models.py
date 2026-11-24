@@ -106,3 +106,16 @@ class ProductReport(models.Model):
 
     def __str__(self):
         return f"Report for {self.product}"
+
+class StoredFile(models.Model):
+    """An uploaded file (product photo, profile picture) kept in the database,
+    so it is available from every device and survives redeploys. Used by
+    apps.product_library.storage.DatabaseStorage."""
+    name = models.CharField(max_length=255, unique=True)
+    data = models.BinaryField()
+    content_type = models.CharField(max_length=100, default="application/octet-stream")
+    size = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name

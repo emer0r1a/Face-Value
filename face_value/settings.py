@@ -40,7 +40,13 @@ LOGIN_URL = "login:login"
 LOGIN_REDIRECT_URL = "home:home"
 LOGOUT_REDIRECT_URL = "landing"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = BASE_DIR / "media"  # only read by `import_local_media`
+
+# Uploads (product photos, profile pictures) live in the database, not on disk.
+STORAGES = {
+    "default": {"BACKEND": "apps.product_library.storage.DatabaseStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
 
 # Application definition
 
