@@ -31,7 +31,12 @@ document.addEventListener('DOMContentLoaded', function () {
             shelf.className = shelf.className.replace(/\btone-\w+/g, '').trim() + ' tone-' + slides[idx].dataset.tone;
             thumbs.forEach(function (t, n) { t.classList.toggle('active', n === idx); t.setAttribute('aria-selected', n === idx); });
             if (count) count.textContent = pad(idx + 1) + ' / ' + pad(slides.length);
-            var a = thumbs[idx]; if (a && a.scrollIntoView) a.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            var a = thumbs[idx], strip = a && a.parentNode;
+            // Scroll only the thumbnail strip sideways. scrollIntoView() would also scroll the whole
+            // page, yanking the visitor back up to the carousel every time it auto-advances.
+            if (strip && strip.scrollWidth > strip.clientWidth) {
+                strip.scrollLeft = a.offsetLeft - (strip.clientWidth - a.offsetWidth) / 2;
+            }
         }
         function start() { stop(); if (reduce || slides.length < 2) return; timer = setInterval(function () { if (!paused) show(idx + 1); }, 5500); }
         function stop() { clearInterval(timer); }

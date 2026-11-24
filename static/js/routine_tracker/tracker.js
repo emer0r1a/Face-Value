@@ -133,7 +133,7 @@
         for (let i = WINDOW - 1; i >= 0; i--) {
             const d = addDays(today, -i), k = iso(d), st = stats(d);
             let cls = "dday";
-            if (!st.due) cls += " rest";
+            if (!st.due) cls += " is-rest";
             else if (st.done >= st.due) cls += " full";
             else if (st.done) cls += " part";
             else if (i > 0) cls += " miss";
