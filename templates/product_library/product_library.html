@@ -17,6 +17,10 @@
                 <a href="{% url 'product_library:add' %}" class="btn btn-primary"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Add product</a>
                 <a href="{% url 'product_library:shopping' %}" class="btn btn-ghost"><svg viewBox="0 0 24 24"><use href="#ic-list"/></svg> Shopping list{% if shopping_count %} <b class="btn__count">{{ shopping_count }}</b>{% endif %}</a>
             </div>
+            <div class="lib-hero__btns lib-hero__btns--sub">
+                <a href="{% url 'product_library:ingredient_overview' %}" class="btn btn-white btn-sm">Ingredient overview</a>
+                <a href="{% url 'product_library:unused' %}" class="btn btn-white btn-sm">Not in a routine</a>
+            </div>
         </div>
         <div class="lib-hero__art" aria-hidden="true">
             <svg class="art tone-pink" viewBox="0 0 120 160"><use href="#a-jar"/></svg>

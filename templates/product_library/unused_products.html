@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Not in any routine{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">
+<link rel="stylesheet" href="{% static 'css/product_library/queries.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="library-container qpage">
+    <div class="top-bar"><a href="{% url 'product_library:list' %}" class="back-link"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg> Back to library</a></div>
+
+    <header class="qhero tone-lime">
+        <svg class="deco sparkle sparkle--l" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div>
+            <span class="eyebrow">gathering dust?</span>
+            <h1>Not in any <span class="script">routine</span></h1>
+            <p>Products on your active shelf that aren't a step in any of your routines yet (active or paused).</p>
+        </div>
+        <div class="qhero__stats">
+            <div><strong>{{ shelf_count }}</strong><span>on shelf</span></div>
+            <div><strong>{{ in_routine_count }}</strong><span>in a routine</span></div>
+            <div class="is-hot"><strong>{{ unused_count }}</strong><span>unused</span></div>
+        </div>
+    </header>
+
+    {% if products %}
+    <div class="product-grid">
+        {% for product in products %}
+        <article class="pcard tone-{{ product.tone }}">
+            <a class="pcard__media" href="{% url 'product_library:detail' product.pk %}" style="text-decoration:none">
+                <span class="pcard__cat">{{ product.category }}</span>
+                <div class="pcard__arch">
+                    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.product_name }}" loading="lazy">
+                    {% else %}<svg class="art" viewBox="0 0 120 160"><use href="#a-{{ product.art }}"/></svg>{% endif %}
+                </div>
+            </a>
+            <div class="pcard__label">
+                <div><h3>{{ product.product_name }}</h3><p>{{ product.brand }}</p></div>
+            </div>
+            <div class="pcard__foot">
+                <a class="btn btn-ghost btn-sm" href="{% url 'routine_builder:create' %}">Add to a routine</a>
+                <span class="date">Added {{ product.date_added|date:"M j, Y" }}</span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <section class="qempty">
+        <svg class="art tone-lime" viewBox="0 0 120 160"><use href="#a-pump"/></svg>
+        {% if shelf_count %}
+        <h3>Every product is in a routine 🎉</h3><p>Nothing on your active shelf is sitting unused.</p>
+        {% else %}
+        <h3>Your shelf is empty</h3><p>Add a few products, then build routines with them.</p>
+        <a class="btn btn-primary" href="{% url 'product_library:add' %}">Add a product</a>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <div class="sqlpair">
+        {% include "partials/sql_panel.html" with panel=sql_inner title="Inner query" %}
+        {% include "partials/sql_panel.html" with panel=sql_outer title="Outer query" %}
+    </div>
+</main>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/product_library/sqlbox.js' %}"></script>{% endblock %}

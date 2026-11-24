@@ -275,3 +275,5 @@
 input[type="date"] { width: 100%; padding: 13px 18px; background: #fff; color: var(--ink); border: 1.5px solid var(--line); border-radius: 999px; font: 500 15px var(--font-body); }
 input[type="date"]:focus { outline: 0; border-color: var(--sage); box-shadow: 0 0 0 4px rgba(118,160,50,.18); }
 [data-theme="dark"] input[type="date"] { background: var(--cream); color-scheme: dark; }
+
+.lib-hero__btns--sub { margin-top: 10px; }

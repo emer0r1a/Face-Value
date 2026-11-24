@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Ingredient overview{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/product_library/product_library.css' %}">
+<link rel="stylesheet" href="{% static 'css/product_library/queries.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="library-container qpage">
+    <div class="top-bar"><a href="{% url 'product_library:list' %}" class="back-link"><svg viewBox="0 0 24 24"><use href="#ic-arrow-l"/></svg> Back to library</a></div>
+
+    <header class="qhero tone-sky">
+        <svg class="deco sparkle sparkle--l" viewBox="0 0 24 24"><use href="#i-sparkle"/></svg>
+        <div>
+            <span class="eyebrow">across your shelf</span>
+            <h1>Ingredient <span class="script">overview</span></h1>
+            <p>Every ingredient in every product you own, with what it does and what to watch for, in one table.</p>
+        </div>
+        <div class="qhero__stats">
+            <div><strong>{{ row_count }}</strong><span>row{{ row_count|pluralize }}</span></div>
+            <div><strong>{{ ingredient_count }}</strong><span>ingredient{{ ingredient_count|pluralize }}</span></div>
+            <div><strong>{{ product_count }}</strong><span>product{{ product_count|pluralize }}</span></div>
+        </div>
+    </header>
+
+    <form method="get" class="qsearch" role="search">
+        <div class="search-box">
+            <svg viewBox="0 0 24 24"><use href="#ic-search"/></svg>
+            <input type="text" name="q" value="{{ query }}" placeholder="Filter by ingredient, product or brand…" autocomplete="off" aria-label="Filter the table">
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        {% if query %}<a class="btn btn-ghost" href="{% url 'product_library:ingredient_overview' %}">Clear</a>{% endif %}
+    </form>
+
+    {% if rows %}
+    <div class="card qtable-card">
+        <table class="qtable">
+            <thead>
+                <tr><th>Ingredient</th><th>Function</th><th>Caution</th><th>Product</th><th>Brand</th></tr>
+            </thead>
+            <tbody>
+                {% for r in rows %}
+                <tr>
+                    <td data-label="Ingredient"><a class="qing" href="{% url 'product_library:list' %}?ingredient={{ r.ingredient.ingredient_name|urlencode }}">{{ r.ingredient.ingredient_name }}</a></td>
+                    <td data-label="Function">{% if r.known %}<span class="chip chip--sky">{{ r.ingredient.function }}</span>{% else %}<span class="muted">Not classified yet</span>{% endif %}</td>
+                    <td data-label="Caution">{% if r.ingredient.caution %}<span class="qcaution">⚠ {{ r.ingredient.caution }}</span>{% else %}<span class="muted">None noted</span>{% endif %}</td>
+                    <td data-label="Product"><a href="{% url 'product_library:detail' r.product.pk %}"><b>{{ r.product.product_name }}</b></a></td>
+                    <td data-label="Brand">{{ r.product.brand }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <section class="qempty">
+        <svg class="art tone-sky" viewBox="0 0 120 160"><use href="#a-dropper"/></svg>
+        {% if query %}
+        <h3>No matches for “{{ query }}”</h3><p>Try a different ingredient, product or brand.</p>
+        <a class="btn btn-ghost" href="{% url 'product_library:ingredient_overview' %}">Clear filter</a>
+        {% else %}
+        <h3>No ingredients yet</h3><p>Add products with their ingredient lists and they'll appear here.</p>
+        <a class="btn btn-primary" href="{% url 'product_library:add' %}">Add a product</a>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    {% include "partials/sql_panel.html" with panel=sql %}
+</main>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/product_library/sqlbox.js' %}"></script>{% endblock %}

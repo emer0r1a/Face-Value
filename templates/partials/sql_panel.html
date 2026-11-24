@@ -1,0 +1,17 @@
+{# Shows the SQL Django generated for a queryset. Context: panel = {label, short, full, note} #}
+<section class="sqlbox" data-sqlbox>
+    <header class="sqlbox__head">
+        <h3>{{ title|default:"How this page gets its data" }} <span class="chip chip--lav">{{ panel.label }}</span></h3>
+        <div class="sqlbox__tools">
+            <div class="tabs" role="tablist" aria-label="SQL view">
+                <button type="button" class="tab active" role="tab" data-view="short">Simplified</button>
+                <button type="button" class="tab" role="tab" data-view="full">Full SQL</button>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" data-copy>Copy</button>
+        </div>
+    </header>
+    {% if panel.note %}<p class="sqlbox__note">{{ panel.note }}</p>{% endif %}
+    <pre class="sqlcode" data-view="short" tabindex="0">{{ panel.short }}</pre>
+    <pre class="sqlcode" data-view="full" tabindex="0" hidden>{{ panel.full }}</pre>
+    <p class="note">“Full SQL” is the statement Django runs, with the values filled in, so it can be pasted into the Supabase SQL Editor. “Simplified” only folds the long SELECT column list.</p>
+</section>

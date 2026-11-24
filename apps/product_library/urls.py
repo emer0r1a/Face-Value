@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import query_views, views
 
 app_name = "product_library"
 
@@ -16,4 +16,6 @@ urlpatterns = [
     path("<int:pk>/finish/", views.finish_product_view, name="finish"),
     path("<int:pk>/restock/", views.restock_product_view, name="restock"),
     path("shopping/", views.shopping_view, name="shopping"),
+    path("ingredient-overview/", query_views.ingredient_overview_view, name="ingredient_overview"),
+    path("not-in-routines/", query_views.unused_products_view, name="unused"),
 ]
