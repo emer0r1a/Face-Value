@@ -24,6 +24,7 @@
                 <input type="password" id="password" name="password" autocomplete="current-password" required>
                 <button type="button" class="pw-toggle" data-toggle-pw="password">Show</button>
             </div>
+            <a class="forgot-link" href="{% url 'login:forgot' %}">Forgot password?</a>
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg">Log in <span class="btn__arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span></button>

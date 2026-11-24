@@ -1,0 +1,39 @@
+{% extends "auth_base.html" %}
+{% load static %}
+{% block title %}Set a new password{% endblock %}
+
+{% block card %}
+<div class="container">
+{% if validlink %}
+    <h2>New <span class="script">password</span></h2>
+    <p class="lede">Choose a new password for your account.</p>
+
+    {% if form.errors %}<div class="error" role="alert">{% for field in form %}{% for e in field.errors %}{{ e }} {% endfor %}{% endfor %}{% for e in form.non_field_errors %}{{ e }} {% endfor %}</div>{% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_new_password1">New password</label>
+            <div class="pw-field">
+                <input type="password" id="id_new_password1" name="new_password1" autocomplete="new-password" autofocus required>
+                <button type="button" class="pw-toggle" data-toggle-pw="id_new_password1">Show</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="id_new_password2">Confirm new password</label>
+            <div class="pw-field">
+                <input type="password" id="id_new_password2" name="new_password2" autocomplete="new-password" required>
+                <button type="button" class="pw-toggle" data-toggle-pw="id_new_password2">Show</button>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Save password</button>
+    </form>
+{% else %}
+    <h2>Link <span class="script">expired</span></h2>
+    <p class="lede">This reset link has already been used or has run out of time.</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'login:forgot' %}">Send a new link</a>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block js %}<script src="{% static 'js/login/login.js' %}"></script>{% endblock %}

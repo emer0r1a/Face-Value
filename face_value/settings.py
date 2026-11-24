@@ -172,8 +172,30 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Used for the forgot-password emails. With no EMAIL_HOST set, emails are printed
+# to the server console (handy locally). In production set EMAIL_HOST,
+# EMAIL_HOST_USER and EMAIL_HOST_PASSWORD (any SMTP provider: Gmail app
+# password, Brevo, Resend...). Django 6.1 configures this through MAILERS;
+# the old EMAIL_BACKEND / EMAIL_HOST settings must not be used alongside it.
+if os.getenv("EMAIL_HOST"):
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+            'OPTIONS': {
+                'host': os.environ["EMAIL_HOST"],
+                'port': int(os.getenv("EMAIL_PORT", "587")),
+                'username': os.getenv("EMAIL_HOST_USER", ""),
+                'password': os.getenv("EMAIL_HOST_PASSWORD", ""),
+                'use_tls': os.getenv("EMAIL_USE_TLS", "True") == "True",
+            },
+        },
+    }
+else:
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        },
+    }
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", os.getenv("EMAIL_HOST_USER") or "Face Value <noreply@facevalue.local>")
+PASSWORD_RESET_TIMEOUT = 60 * 60  # reset links last one hour

@@ -1,0 +1,22 @@
+{% extends "auth_base.html" %}
+{% block title %}Forgot password{% endblock %}
+
+{% block card %}
+<div class="container">
+    <h2>Forgot <span class="script">password?</span></h2>
+    <p class="lede">Enter the email you signed up with and we'll send you a link to set a new one.</p>
+
+    {% if form.errors %}<div class="error" role="alert">Please enter a valid email address.</div>{% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_email">Email</label>
+            <input type="email" id="id_email" name="email" value="{{ form.email.value|default:'' }}" autocomplete="email" autofocus required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Send reset link <span class="btn__arrow"><svg viewBox="0 0 24 24"><use href="#ic-arrow-r"/></svg></span></button>
+    </form>
+
+    <div class="link-row">Remembered it? <a href="{% url 'login:login' %}">Back to log in</a></div>
+</div>
+{% endblock %}

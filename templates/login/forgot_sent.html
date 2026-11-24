@@ -1,0 +1,12 @@
+{% extends "auth_base.html" %}
+{% block title %}Check your email{% endblock %}
+
+{% block card %}
+<div class="container">
+    <h2>Check your <span class="script">email</span></h2>
+    <p class="lede">If an account exists for that email, a reset link is on its way. It works for one hour.</p>
+    <p class="lede">Nothing yet? Check your spam folder, or make sure you used the email you signed up with.</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'login:login' %}">Back to log in</a>
+    <div class="link-row"><a href="{% url 'login:forgot' %}">Try a different email</a></div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "auth_base.html" %}
+{% block title %}Password updated{% endblock %}
+
+{% block card %}
+<div class="container">
+    <h2>All <span class="script">set</span></h2>
+    <p class="lede">Your password has been updated. You can log in with it now.</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'login:login' %}">Log in</a>
+</div>
+{% endblock %}
